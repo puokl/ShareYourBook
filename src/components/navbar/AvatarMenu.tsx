@@ -15,10 +15,13 @@ import React, { useContext } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import AvatarModal from "../modal/AvatarModal";
 import { TbLogout } from "react-icons/tb";
+import { useRouter } from "next/router";
+
 type AvatarMenuProps = {};
 
 const AvatarMenu: React.FC<AvatarMenuProps> = () => {
-  const { logout, username } = useContext(AuthContext);
+  const { logout, user } = useContext(AuthContext);
+  const router = useRouter();
 
   return (
     <Flex alignItems={"center"}>
@@ -37,9 +40,9 @@ const AvatarMenu: React.FC<AvatarMenuProps> = () => {
           >
             <Avatar
               size={"sm"}
-              bg="teal.500"
-              name={username}
-              src={"https://bit.ly/broken-link"}
+              // bg="teal.500"
+              name={user ? user?.displayName : ""}
+              src={user?.photoURL}
             />
           </MenuButton>
           <MenuList alignItems={"center"}>
@@ -47,17 +50,23 @@ const AvatarMenu: React.FC<AvatarMenuProps> = () => {
             <Center>
               <Avatar
                 size={"2xl"}
-                name={username}
-                src="https://bit.ly/broken-link"
+                name={user ? user?.displayName : ""}
+                src={user?.photoURL}
               />
             </Center>
             <br />
             <Center>
-              <Text>{username}</Text>
+              <Text fontSize="lg" as="b">
+                {user ? user?.displayName : ""}
+              </Text>
             </Center>
             <br />
             <MenuDivider />
-            <MenuItem>Your Library</MenuItem>
+            <MenuItem
+              onClick={() => router.push(`/library/${user?.displayName}`)}
+            >
+              Your Library
+            </MenuItem>
 
             <AvatarModal />
 

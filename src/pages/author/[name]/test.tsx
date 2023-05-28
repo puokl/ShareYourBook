@@ -60,7 +60,6 @@ const index: React.FC<indexProps> = () => {
       cover: `https://covers.openlibrary.org/b/id/${item.covers}-S.jpg`,
       authorName: selectedAuthor.name,
       like: [],
-      email: user?.email,
     })
       .then((docRef) => {
         console.log("docRef", docRef.id);
@@ -73,8 +72,54 @@ const index: React.FC<indexProps> = () => {
 
   const libraryRef = collection(database, "library");
 
+  // //!SECTION
+  // var docRef = collection("library").doc(username);
+  // docRef
+  //   .get()
+  //   .then((doc) => {
+  //     if (doc.exists) {
+  //       console.log("Document data:", doc.data());
+  //     } else {
+  //       // doc.data() will be undefined in this case
+  //       console.log("No such document!");
+  //     }
+  //   })
+  //   .catch((error) => {
+  //     console.log("Error getting document:", error);
+  //   });
+  // //!SECTION
   const handleSubmitLibrary = (item) => {
+    // addDoc(libraryRef, { username })
+    // if (item) {
+    //   const libraryDocRef = doc(database, username, item.title);
+    //   updateDoc(
+    //     libraryDocRef,
+    //     {
+    //       bookName: item.title,
+    //       date: new Date().toISOString(),
+    //       username: username,
+    //       cover: `https://covers.openlibrary.org/b/id/${item.covers}-S.jpg`,
+    //       authorName: selectedAuthor.name,
+    //     }
+    //   );
+    // }
+    // setDoc(doc(database, "library", username), {
+    //   bookName: item.title,
+    //   date: new Date().toISOString(),
+    //   username: username,
+    //   cover: `https://covers.openlibrary.org/b/id/${item.covers}-S.jpg`,
+    //   authorName: selectedAuthor.name,
+    // }).catch((err) => {
+    //   alert(err.message);
+    //   console.log("err.message", err.message);
+    // });
+
     const libraryDocRef = doc(database, "library", user?.displayName);
+
+    const test = async () => {
+      const docSnap = await getDoc(libraryDocRef);
+      return docSnap.exists();
+    };
 
     getDoc(libraryDocRef).then((res) => {
       if (res.exists()) {
@@ -85,7 +130,6 @@ const index: React.FC<indexProps> = () => {
             username: user?.displayName,
             cover: `https://covers.openlibrary.org/b/id/${item.covers}-S.jpg`,
             authorName: selectedAuthor.name,
-            email: user?.email,
           }),
         }).catch((err) => {
           alert(err.message);
@@ -101,7 +145,6 @@ const index: React.FC<indexProps> = () => {
               username: user?.displayName,
               cover: `https://covers.openlibrary.org/b/id/${item.covers}-S.jpg`,
               authorName: selectedAuthor.name,
-              email: user?.email,
             },
           ],
         }).catch((err) => {

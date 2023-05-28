@@ -11,10 +11,11 @@ import {
   MenuItem,
 } from "@chakra-ui/react";
 import React, { useContext } from "react";
-import { app, storage } from "../../firebase/firebaseConfig";
+import { app, database, storage } from "../../firebase/firebaseConfig";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { AuthContext } from "@/context/AuthContext";
 import { getAuth, updateProfile } from "firebase/auth";
+import { doc, updateDoc } from "firebase/firestore";
 
 type AvatarModalProps = {};
 
@@ -47,6 +48,11 @@ const AvatarModal: React.FC<AvatarModalProps> = () => {
             photoURL: downloadURL,
           })
             .then(() => console.log("profile updated"))
+            .then(() => {
+              const userDocRef = doc(database, "user", auth.currentUser.email);
+              updateDoc(userDocRef, { photoURL: downloadURL });
+            })
+            .then(() => console.log("auth on avatarmodal", auth))
             .catch((error) => console.log(error));
 
           onClose();

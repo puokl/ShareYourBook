@@ -14,6 +14,7 @@ import {
   MenuDivider,
   MenuItem,
   MenuList,
+  useColorMode,
 } from "@chakra-ui/react";
 import React, { useContext, useEffect, useState } from "react";
 import { LoginModal } from "../modal/LoginModal";
@@ -22,16 +23,14 @@ import SearchInput from "./SearchInput";
 import { app, storage } from "../../firebase/firebaseConfig";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import AvatarMenu from "./AvatarMenu";
+import { MoonIcon, SunIcon } from "@chakra-ui/icons";
 
 type NavbarProps = {};
 
 const Navbar: React.FC<NavbarProps> = () => {
-  const { isLoggedIn, logout, signUpWithGoogle, signUpForm, setIsLoggedIn } =
+  const { logout, signUpWithGoogle, signUpForm, user } =
     useContext(AuthContext);
-  const [username, setUsername] = useState("");
-  // console.log("signUpForm", signUpForm);
-  // console.log("name", username);
-
+  const { colorMode, toggleColorMode } = useColorMode();
   //SECTION -
 
   const { avatar, setAvatar } = useContext(AuthContext);
@@ -61,11 +60,6 @@ const Navbar: React.FC<NavbarProps> = () => {
   };
 
   //SECTION -
-  useEffect(() => {
-    const user = sessionStorage.getItem("user");
-    setUsername(user ?? "");
-    // setIsLoggedIn(true);
-  }, []);
 
   return (
     <Flex
@@ -100,7 +94,10 @@ const Navbar: React.FC<NavbarProps> = () => {
         direction={"row"}
         spacing={6}
       >
-        {!username && (
+        <Button onClick={toggleColorMode}>
+          {colorMode === "light" ? <MoonIcon /> : <SunIcon />}
+        </Button>
+        {!user && (
           <>
             <LoginModal />
 
@@ -108,7 +105,7 @@ const Navbar: React.FC<NavbarProps> = () => {
           </>
         )}
 
-        {username && <AvatarMenu />}
+        {user && <AvatarMenu />}
       </Stack>
     </Flex>
   );

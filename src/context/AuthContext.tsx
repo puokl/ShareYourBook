@@ -8,6 +8,7 @@ import {
   updateProfile,
   User,
   onAuthStateChanged,
+  signOut,
 } from "firebase/auth";
 import { app, database } from "../firebase/firebaseConfig";
 import { useRouter } from "next/router";
@@ -18,7 +19,8 @@ import {
   useState,
   ReactNode,
 } from "react";
-import { setDoc, doc, addDoc, getDoc } from "firebase/firestore";
+import { setDoc, doc, addDoc, getDoc, collection } from "firebase/firestore";
+import { User as FirebaseUser } from "firebase/auth";
 
 interface SignUpForm {
   name: string;
@@ -32,18 +34,16 @@ interface AuthContextProps {
   signUpWithGoogle: () => void;
   signUpWithGithub: () => void;
   modalRegister: () => void;
-  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
-  isLoggedIn: boolean;
   signUpForm: SignUpForm;
   setSignUpForm: React.Dispatch<React.SetStateAction<SignUpForm>>;
   logout: () => void;
   login: () => void;
   error: string;
   setError: React.Dispatch<React.SetStateAction<string>>;
-  username: string;
-  setUsername: React.Dispatch<React.SetStateAction<string>>;
   avatar: string;
   setAvatar: React.Dispatch<React.SetStateAction<string>>;
+  user: User | null;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
 }
 
 interface AuthContextProviderProps {
@@ -53,15 +53,11 @@ interface AuthContextProviderProps {
 export const AuthContext = createContext<AuthContextProps>(
   {} as AuthContextProps
 );
-// export const useAuth = () => useContext(AuthContext);
 
 export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
-  // const [email, setEmail] = useState("");
-  // const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [error, setError] = useState("");
   const [avatar, setAvatar] = useState("");
+  const [user, setUser] = useState<FirebaseUser | null>(null);
 
   const auth = getAuth(app);
   const router = useRouter();
@@ -81,6 +77,7 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
   //       return;
 
   const modalRegister = () => {
+    const userRef = collection(database, "user");
     createUserWithEmailAndPassword(auth, signUpForm.email, signUpForm.password)
       .then(() => {
         updateProfile(auth.currentUser as User, {
@@ -89,12 +86,30 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
       })
       .then(() => {
         const user = auth.currentUser;
+        console.log("user on register", user);
         return Promise.resolve({ user });
       })
+      // .then((res) =>
+      //   addDoc(userRef, {
+      //     email: "hi",
+      //     photoURL: "./images/avatar.jpeg",
+      //     username: "hello",
+      //     // lastSignInTime: res.lastSignInTime,
+      //     // creationTime: res.creationTime,
+      //   })
+      // )
       .then((res) => {
-        sessionStorage.setItem("Token", res.user.accessToken);
-        // alert("Registration completed");
-        setIsLoggedIn(true);
+        const user = res.user;
+
+        setDoc(doc(database, "user", signUpForm.email), {
+          email: user.email,
+          photoURL: "./images/avatar.jpeg",
+          username: signUpForm.name,
+        });
+
+        // console.log("setDoc done");
+      })
+      .then((res) => {
         router.push("/");
       })
       .catch((error) => console.log("Error on modalRegister", error.message));
@@ -106,91 +121,88 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
         console.log(res.user);
         sessionStorage.setItem("Token", res.user.accessToken);
         // alert("Registration completed");
-        setIsLoggedIn(true);
 
         router.push("/");
       })
-      .catch(
-        (error) => console.log(error.message)
-        // console.log("Error on createUserWithEmailAndPassword()", error)
+
+      .catch((error) =>
+        console.log(
+          "Error on createUserWithEmailAndPassword(): ",
+          error.message
+        )
       );
   };
-  //FIXME - use onAuthStateChanged instead of saving in sessionstorage in a useeffect
+
   const login = () => {
     signInWithEmailAndPassword(auth, signUpForm.email, signUpForm.password)
       .then((res) => {
-        console.log("res", res);
-        console.log("res.user", res.user.displayName);
-        sessionStorage.setItem("Token", res.user.accessToken);
-        sessionStorage.setItem("user", res.user.displayName);
-        setUsername(res.user.displayName);
-        setIsLoggedIn(true);
+        //   const user = userCredential.user;
+        console.log("login user", user);
+        setUser(res.user);
         router.push("/");
       })
-      .catch(
-        (error) => setError(error.message)
-        // console.log(error.message)
-      );
+      .catch((err) => {
+        alert(err.message);
+        console.log("err.message", err.message);
+      })
+      .catch((error) => {
+        console.log("Error on signInWithEmailAndPassword()", error.message);
+        setUser(null);
+      });
   };
 
   const signUpWithGoogle = () => {
     signInWithPopup(auth, googleProvider)
       .then((res) => {
         console.log("res.user", res.user);
-        sessionStorage.setItem("Token", res.user.accessToken);
-
-        sessionStorage.setItem("user", res.user.displayName);
-        setUsername(res.user.displayName);
-        setIsLoggedIn(true);
-        console.log(username);
+        setUser(res.user);
         router.push("/");
       })
-      .catch(
-        (error) => console.log(error.message)
-        // console.log("Error on signUpWithGoogle()", error));
+      .catch((error) =>
+        console.log("Error on signUpWithGoogle(): ", error.message)
       );
   };
 
   const signUpWithGithub = () => {
     signInWithPopup(auth, githubProvider)
       .then((res) => {
-        console.log(res.user);
-        sessionStorage.setItem("Token", res.user.accessToken);
-        sessionStorage.setItem("user", res.user.displayName);
-        setUsername(res.user.displayName);
-        setIsLoggedIn(true);
+        console.log("res.user", res.user);
+        setUser(res.user);
         router.push("/");
       })
-      .catch(
-        (error) => console.log(error.message)
-        //console.log("Error on signUpWithGithub()", error)
+      .catch((error) =>
+        console.log("Error on signUpWithGithub()", error.message)
       );
   };
 
-  //FIXME - use signout method from firebase
-  const logout = () => {
-    sessionStorage.removeItem("Token");
-    sessionStorage.removeItem("user");
-    setSignUpForm({
-      name: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
+  const checkIfUserIsLoggedIn = () => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const uid = user.uid;
+        console.log("user is logged in", user);
+        console.log("user email", user.email);
+        setUser(user);
+      } else {
+        console.log("user is not logged in");
+        setUser(null);
+      }
     });
-    setIsLoggedIn(false);
-    setUsername("");
-    router.push("/register");
   };
 
-  //FIXME - move it somewhere else, it is always called
+  const logout = () => {
+    signOut(auth)
+      .then(() => {
+        setUser(null);
+        console.log("logout succesfully");
+      })
+      .catch((error) => {
+        console.log("error logging out", error.message);
+      });
+  };
+
   useEffect(() => {
-    let token = sessionStorage.getItem("Token");
-    setUsername(sessionStorage.getItem("user"));
-    console.log("useeffect triggered");
-    if (token) {
-      setIsLoggedIn(true);
-      // router.push("/");
-    }
+    checkIfUserIsLoggedIn();
+    console.log("user in useEffect on AuthContext", user);
   }, []);
 
   return (
@@ -201,16 +213,15 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
         signUpWithGoogle,
         signUpWithGithub,
         register,
-        isLoggedIn,
         signUpForm,
         setSignUpForm,
         modalRegister,
         error,
         setError,
-        username,
-        setIsLoggedIn,
         avatar,
         setAvatar,
+        user,
+        setUser,
       }}
     >
       {children}

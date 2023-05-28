@@ -12,24 +12,15 @@ import Right from "@/components/rightBody/Right";
 type indexProps = {};
 
 const index: React.FC<indexProps> = () => {
-  const [username, setUsername] = useState("");
+  const { user } = useContext(AuthContext);
+
   const router = useRouter();
 
-  const logout = () => {
-    sessionStorage.removeItem("Token");
-    router.push("/register");
-  };
-
-  useEffect(() => {
-    const token = sessionStorage.getItem("Token");
-    const user = sessionStorage.getItem("user");
-
-    if (!token) {
-      router.push("/register");
-    } else {
-      setUsername(user ?? "");
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (!user) {
+  //     router.push("/register");
+  //   }
+  // }, []);
   return (
     <>
       <Layout>
@@ -38,7 +29,7 @@ const index: React.FC<indexProps> = () => {
           <meta name="description" content="" />
           <link rel="icon" href="" />
         </Head>
-        <Text>Hi {username}</Text>
+        <Text>Hi {user?.displayName}</Text>
         <Flex height="80vh">
           <Left />
           <Center />
