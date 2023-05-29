@@ -25,8 +25,14 @@ const index: React.FC<indexProps> = () => {
     <>
       <Layout>
         <Head>
-          <title>Home</title>
-          <meta name="description" content="" />
+          <title>
+            ShareYourBook - Find and Share your favorite Book to the community
+          </title>
+          <meta
+            name="description"
+            content="Discover which book people likes and share your favorite books on ShareYourBook. Search for your favorite authors,
+            and build your personalized reading library. Join our community of book lovers today!"
+          />
           <link rel="icon" href="" />
         </Head>
         <Text>Hi {user?.displayName}</Text>

@@ -133,17 +133,37 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
       );
   };
 
+  // const login = () => {
+  //   signInWithEmailAndPassword(auth, signUpForm.email, signUpForm.password)
+  //     .then((res) => {
+  //       //   const user = userCredential.user;
+  //       console.log("login user", user);
+  //       setUser(res.user);
+  //       router.push("/");
+  //     })
+
+  //     .catch((error) => {
+  //       console.log("Error on signInWithEmailAndPassword()", error.message);
+  //       setUser(null);
+  //     });
+  // };
+
   const login = () => {
     signInWithEmailAndPassword(auth, signUpForm.email, signUpForm.password)
-      .then((res) => {
-        //   const user = userCredential.user;
-        console.log("login user", user);
-        setUser(res.user);
-        router.push("/");
-      })
-      .catch((err) => {
-        alert(err.message);
-        console.log("err.message", err.message);
+      .then((userCredential) => {
+        // Retrieve the user document from Firestore
+        const userDocRef = doc(database, "user", userCredential.user.email);
+        return getDoc(userDocRef).then((userDocSnap) => {
+          // Update the lastLoginDate field
+          return setDoc(
+            userDocRef,
+            { lastLoginDate: new Date() },
+            { merge: true }
+          ).then(() => {
+            setUser(userCredential.user);
+            router.push("/");
+          });
+        });
       })
       .catch((error) => {
         console.log("Error on signInWithEmailAndPassword()", error.message);

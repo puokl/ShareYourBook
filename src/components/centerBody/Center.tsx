@@ -30,24 +30,13 @@ import { GoComment } from "react-icons/go";
 import moment from "moment";
 import Comment from "./Comments";
 import Book from "./Books";
+import { BookType } from "@/types/bookType";
+import { UserType } from "../../types/userType";
 
 type CenterProps = {};
-interface FirebaseDataProps {
-  bookName: string;
-  comment: string[];
-  cover: string;
-  date: string;
-  id: string;
-  unsername: string;
-  authorName: string;
-}
-type User = {
-  email: string;
-  photoURL: string;
-  username: string;
-};
+
 const Center: React.FC<CenterProps> = ({ items }) => {
-  const [firebaseData, setFirebaseData] = useState([{} as FirebaseDataProps]);
+  const [firebaseData, setFirebaseData] = useState([{} as BookType]);
   const [commentInputs, setCommentInputs] = useState({});
   const [isLoading, setIsLoading] = useState(true);
 
@@ -56,7 +45,7 @@ const Center: React.FC<CenterProps> = ({ items }) => {
   const toast = useToast();
 
   const [userimg, setUserimg] = useState([]);
-  const [userAvatar, setUserAvatar] = useState<User[]>([]);
+  const [userAvatar, setUserAvatar] = useState<UserType[]>([]);
 
   const addComment = (itemId: string) => {
     const comment = commentInputs[itemId];
@@ -140,7 +129,7 @@ const Center: React.FC<CenterProps> = ({ items }) => {
     const booksDocRef = doc(database, "books", item.id);
 
     updateDoc(booksDocRef, {
-      like: arrayUnion(user.uid),
+      like: arrayUnion(user.email),
     })
       .then(() => console.log("res"))
       .catch((err) => {
@@ -235,122 +224,6 @@ const Center: React.FC<CenterProps> = ({ items }) => {
                   addComment={addComment}
                   deleteComment={deleteComment}
                 />
-                // <Flex key={index} direction="column">
-                //   <Flex justifyContent="space-around" direction="column">
-                //     <Flex>
-                //       <Flex direction="column" ml="20px">
-                //         <Flex>
-                //           <Image
-                //             // src="./images/avatar.jpeg"
-                //             src={photoURL}
-                //             boxSize="25px"
-                //             borderRadius="40%"
-                //           />
-
-                //           <Text fontSize="sm" as="b" ml="20px">
-                //             {item.username}
-                //           </Text>
-                //         </Flex>
-                //         <Text fontSize="sm" as="b">
-                //           {item.bookName}
-                //         </Text>
-
-                //         <Text fontSize="xs">
-                //           by:{" "}
-                //           <Text fontSize="sm" as="b">
-                //             {item.authorName}
-                //           </Text>
-                //         </Text>
-
-                //         <Text fontSize="xs">
-                //           posted:{" "}
-                //           <Text fontSize="sm" as="b">
-                //             {formattedDate(item.date)}
-                //           </Text>
-                //         </Text>
-                //       </Flex>
-                //       <Flex width="auto" height="65px">
-                //         <Image
-                //           // boxSize="50px"
-                //           layout="fill"
-                //           objectFit="contain"
-                //           src={item.cover}
-                //           alt="book cover"
-                //           fallbackSrc=""
-                //           ml="100px"
-                //         />
-                //       </Flex>
-                //     </Flex>
-                //     <Flex>
-                //       <HStack>
-                //         <Text>
-                //           {item.comment ? item.comment.length : 0} comments
-                //         </Text>
-                //         <GoComment />
-                //       </HStack>
-                //       <HStack ml="50px">
-                //         <button onClick={() => handleLikeClick(item)}>
-                //           <AiOutlineHeart />
-                //         </button>
-                //         <Text>
-                //           {item.like ? item.like.length : 0}{" "}
-                //           {item.like.length == 1 ? "like" : "likes"}
-                //         </Text>
-                //       </HStack>
-                //     </Flex>
-                //   </Flex>
-
-                //   {/* //SECTION - COMMENTS  */}
-                //   <Flex direction="column">
-                //     {item.comment &&
-                //       item.comment
-                //         .slice(0, visibleComments)
-                //         .map((comment, commentIndex) => {
-                //           const commentUser = userAvatar.find(
-                //             (user) => user.username === comment.username
-                //           );
-                //           const commentUserPhotoURL = commentUser
-                //             ? commentUser.photoURL
-                //             : null;
-                //           return (
-                //             <Comment
-                //               key={commentIndex}
-                //               comment={comment}
-                //               commentIndex={commentIndex}
-                //               commentUserPhotoURL={commentUserPhotoURL}
-                //               deleteComment={(commentIndex) =>
-                //                 deleteComment(item.id, commentIndex)
-                //               }
-                //             />
-                //           );
-                //         })}
-                //     {item.comment && item.comment.length > visibleComments && (
-                //       <Flex justifyContent="center">
-                //         <Button size="sx" onClick={handleShowMore}>
-                //           Show More
-                //         </Button>
-                //       </Flex>
-                //     )}
-
-                //     {visibleComments > 2 && (
-                //       <Flex justifyContent="center">
-                //         <Button size="sx" onClick={handleShowLess}>
-                //           Show Less
-                //         </Button>
-                //       </Flex>
-                //     )}
-                //   </Flex>
-                //   <Flex bg="white">
-                //     <Input
-                //       type="text"
-                //       value={commentInputs[item.id] || ""}
-                //       onChange={(e) => setCommentInput(item.id, e.target.value)}
-                //     />
-                //     <Button onClick={() => addComment(item.id)}>
-                //       Add Comment
-                //     </Button>
-                //   </Flex>
-                // </Flex>
               );
             })}
         </Flex>
@@ -360,87 +233,3 @@ const Center: React.FC<CenterProps> = ({ items }) => {
 };
 
 export default Center;
-
-//   <Flex
-//     key={commentIndex}
-//     justifyContent="center"
-//     bg="red.100"
-//   >
-//     <Flex width="150px" direction="column">
-//       <Image
-//         src="./images/avatar.jpeg"
-//         boxSize="25px"
-//         borderRadius="40%"
-//       />
-//     </Flex>
-//     <Flex direction="column">
-//       <Flex
-//         ml="10px"
-//         width="350px"
-//         justifyContent="space-between"
-//       >
-//         <Flex>
-//           <Text fontSize="sm" as="b" color="blue.600">
-//             {comment.username}
-//           </Text>{" "}
-//           <Text
-//             fontSize="10px"
-//             as="samp"
-//             ml="10px"
-//             mt="2px"
-//           >
-//             {formattedDate(comment.date)}
-//           </Text>
-//         </Flex>
-//         <Flex>
-//           <Button
-//             size="sx"
-//             width="100px"
-//             onClick={() => deleteComment(commentIndex)}
-//           >
-//             Delete
-//           </Button>
-//         </Flex>
-//       </Flex>
-//       <Flex>
-//         <Text fontSize="sm" as="cite">
-//           "{comment.text}"
-//         </Text>
-//       </Flex>
-//     </Flex>
-//   </Flex>
-//   // <Comment
-//   //   key={commentIndex}
-//   //   comment={comment}
-//   //   commentIndex={commentIndex}
-//   //   deleteComment={(commentIndex) =>
-//   //     deleteComment(item.id, commentIndex)
-//   //   }
-//   // />
-// ))}
-
-//   {item.comment && item.comment.length > visibleComments && (
-//     <Flex justifyContent="center">
-//       <Button size="sx" onClick={handleShowMore}>
-//         Show More
-//       </Button>
-//     </Flex>
-//   )}
-
-//   {visibleComments > 2 && (
-//     <Flex justifyContent="center">
-//       <Button size="sx" onClick={handleShowLess}>
-//         Show Less
-//       </Button>
-//     </Flex>
-//   )}
-// </Flex>
-// <Flex bg="white">
-//   <Input
-//     type="text"
-//     value={commentInputs[item.id] || ""}
-//     onChange={(e) => setCommentInput(item.id, e.target.value)}
-//   />
-//   <Button onClick={() => addComment(item.id)}>
-//     Add Comment
-//   </Button>

@@ -8,55 +8,60 @@ import {
   getDoc,
   getDocs,
   onSnapshot,
+  get,
 } from "firebase/firestore";
 import Layout from "@/components/Layout";
+import { firestore } from "firebase-admin";
 type indexProps = {};
 
 const index: React.FC<indexProps> = () => {
   const { user } = useContext(AuthContext);
   const [libraryData, setLibraryData] = useState({});
   // const libraryCollectionRef = collection(database, "library");
+  const [books, setBooks] = useState([]);
 
-  const getLibrary = async () => {
-    console.log("user", user);
-    const currentUser: string = user?.displayName;
-    const docRef = doc(database, "library", currentUser);
-    const docSnap = await getDoc(docRef);
+  // const getLibrary = async () => {
 
-    if (docSnap.exists()) {
-      console.log("Document data:", docSnap.data());
-      setLibraryData(docSnap.data());
-    } else {
-      // docSnap.data() will be undefined in this case
-      console.log("No such document!");
-    }
-    //ANCHOR -
-    //   const querySnapshot = await getDocs(collection(database, "library"));
-    //   const libraryArray = [];
-    //   querySnapshot.forEach((doc) => {
-    //     console.log("doc", doc.data());
-    //     console.log(`${doc.id} => ${doc.data()}`);
-    //     libraryArray.push(doc.data());
-    //   });
-    //   setLibraryData(libraryArray);
-  };
+  // };
 
   useEffect(() => {
-    getLibrary();
-  }, []);
+    const fetchBooks = async () => {
+      try {
+        const docRef = doc(collection(database, "library"), user?.displayName);
+        const docSnap = await getDoc(docRef);
+        console.log("user.displayName", user.displayName);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setBooks(data.libri);
+          console.log("books", books);
+        } else {
+          console.log("No such document!");
+        }
+      } catch (error) {
+        console.log("Error getting document:", error);
+      }
+    };
+
+    fetchBooks();
+  }, [user]);
 
   return (
     <>
       <Layout>
-        {user?.displayName ?? <div>Hi {user?.displayName}</div>}
-        {console.log("libraryData", libraryData)}
-        {/* <div>Hi there</div>
-      {libraryData &&
-        libraryData.libri.map((item, index) => {
-          <div key={index}>
-            <p>{item.initialized}</p>{" "}
-          </div>;
-        })} */}
+        <div>
+          <h2>Book List</h2>
+          {console.log("books", books)}
+          <ul>
+            {books.map((book, index) => (
+              <li key={index}>
+                <img src={book.cover} alt={book.bookName} />
+                <p>Book Name: {book.bookName}</p>
+                <p>Author: {book.authorName}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
       </Layout>
     </>
   );
