@@ -93,7 +93,7 @@ const Books: React.FC<BookProps> = ({
           )}
         </Flex>
       )}
-      <Flex bg="white" h={7} m={2} bg="gray.100">
+      <Flex h={7} m={2} bg="gray.100">
         <Input
           placeholder="Join the discussion"
           h="auto"
