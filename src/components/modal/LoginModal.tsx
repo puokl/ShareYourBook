@@ -1,6 +1,5 @@
+import { useContext, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
-import React, { useContext, useState } from "react";
-import SignUpModal from "./SignUpModal";
 import {
   useDisclosure,
   Button,
@@ -9,25 +8,21 @@ import {
   ModalContent,
   ModalHeader,
   ModalCloseButton,
-  ModalBody,
-  ModalFooter,
   Image,
   Text,
   Flex,
   Input,
 } from "@chakra-ui/react";
-import { FIREBASE_ERRORS } from "@/firebase/error";
+import { CustomInput } from "@/utils/CustomComponent";
 
 export function LoginModal() {
   const {
-    logout,
-    login,
     signUpWithGoogle,
     signUpWithGithub,
-    register,
     signUpForm,
     setSignUpForm,
     error,
+    login,
   } = useContext(AuthContext);
 
   const [showSignUpModal, setShowSignUpModal] = useState(false);
@@ -48,7 +43,7 @@ export function LoginModal() {
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Log In</ModalHeader>
+          <ModalHeader textAlign="center">Log In</ModalHeader>
           <ModalCloseButton />
           {/* <ModalBody>
             <div>I'm a modal</div>
@@ -65,6 +60,8 @@ export function LoginModal() {
               </Button>
             </Flex>
             <Flex
+              pr={3}
+              pl={3}
               direction="column"
               width="100%"
               mb={4}
@@ -75,65 +72,28 @@ export function LoginModal() {
                 OR
               </Text>
 
-              <Input
+              <CustomInput
                 name="email"
                 placeholder="email"
                 onChange={(event) => handleInput(event)}
-                // value={email}
                 type="email"
-                mb={2}
-                fontSize="10pt"
-                _placeholder={{ color: "gray.500" }}
-                _hover={{
-                  bg: "white",
-                  border: "1px solid",
-                  borderColor: "blue.500",
-                }}
-                _focus={{
-                  outline: "none",
-                  bg: "white",
-                  border: "1px solid",
-                  borderColor: "blue.500",
-                }}
-                bg="gray.50"
               />
-              <Input
+              <CustomInput
                 name="password"
                 placeholder="password"
                 onChange={(event) => handleInput(event)}
-                // value={password}
                 type="password"
-                mb={2}
-                fontSize="10pt"
-                _placeholder={{ color: "gray.500" }}
-                _hover={{
-                  bg: "white",
-                  border: "1px solid",
-                  borderColor: "blue.500",
-                }}
-                _focus={{
-                  outline: "none",
-                  bg: "white",
-                  border: "1px solid",
-                  borderColor: "blue.500",
-                }}
-                bg="gray.50"
               />
               {error && (
                 <Text textAlign="center" color="red" fontSize="10pt">
-                  {error}
+                  {error.message}
                 </Text>
               )}
 
               <Button onClick={login}>Log In</Button>
             </Flex>
           </main>
-          {/* <ModalFooter>
-            <Button colorScheme="blue" mr={3} onClick={onClose}>
-              Close
-            </Button>
-            <Button variant="ghost">Secondary Action</Button>
-          </ModalFooter> */}
+
           <Flex fontSize="9pt" justifyContent="center">
             <Text mr={1}>New here?</Text>
 

@@ -23,7 +23,9 @@ import SearchInput from "./SearchInput";
 import { app, storage } from "../../firebase/firebaseConfig";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import AvatarMenu from "./AvatarMenu";
-import { MoonIcon, SunIcon } from "@chakra-ui/icons";
+import { InfoOutlineIcon, MoonIcon, SunIcon, InfoIcon } from "@chakra-ui/icons";
+import { FaInfoCircle } from "react-icons/fa";
+import Link from "next/link";
 
 type NavbarProps = {};
 
@@ -63,24 +65,32 @@ const Navbar: React.FC<NavbarProps> = () => {
 
   return (
     <Flex
-      bg="gray.100"
+      bg="blue.700"
       padding={2}
       // justifyContent="space-between"
       justifyContent={{ md: "space-between" }}
       display="flex"
-      maxHeight="100px"
+      minHeight="55px"
+      pr={5}
+      pl={5}
     >
       <Flex
         align="center"
         width={{ base: "40px", md: "auto" }}
         mr={{ base: 0, md: 2 }}
       >
-        <Image src="/images/Book-Vector.jpeg" height="50px" />
+        <Link href="/">
+          {" "}
+          <Image src="/images/book.png" height="30px" />
+        </Link>
         <Text
           display={{ base: "none", md: "unset" }}
+          ml={5}
+          as="b"
+          color="white"
           // chakra is mobile first, base none means when mobile size not show
         >
-          Book Api
+          <Link href="/"> Share Your Book</Link>
         </Text>
       </Flex>
       <Flex minWidth="600px">
@@ -94,9 +104,13 @@ const Navbar: React.FC<NavbarProps> = () => {
         direction={"row"}
         spacing={6}
       >
-        <Button onClick={toggleColorMode}>
+        <Link href="/info">
+          {/* <InfoOutlineIcon mt={3} /> */}
+          <InfoIcon mt={3} />
+        </Link>
+        {/* <Button onClick={toggleColorMode}>
           {colorMode === "light" ? <MoonIcon /> : <SunIcon />}
-        </Button>
+        </Button> */}
         {!user && (
           <>
             <LoginModal />

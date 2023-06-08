@@ -1,3 +1,4 @@
+import { useContext } from "react";
 import {
   Flex,
   Stack,
@@ -11,7 +12,6 @@ import {
   MenuItem,
   Text,
 } from "@chakra-ui/react";
-import React, { useContext } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import AvatarModal from "../modal/AvatarModal";
 import { TbLogout } from "react-icons/tb";
@@ -26,10 +26,6 @@ const AvatarMenu: React.FC<AvatarMenuProps> = () => {
   return (
     <Flex alignItems={"center"}>
       <Stack direction={"row"} spacing={7}>
-        {/* <Button onClick={toggleColorMode}>
-                  {colorMode === "light" ? <MoonIcon /> : <SunIcon />}
-                </Button> */}
-
         <Menu>
           <MenuButton
             as={Button}
@@ -40,18 +36,18 @@ const AvatarMenu: React.FC<AvatarMenuProps> = () => {
           >
             <Avatar
               size={"sm"}
-              // bg="teal.500"
-              name={user ? user?.displayName : ""}
-              src={user?.photoURL}
+              name={user ? user?.displayName ?? "" : ""}
+              src={user?.photoURL ?? ""}
             />
+            {/* nullish operator, if is null ?? provides an empty string */}
           </MenuButton>
           <MenuList alignItems={"center"}>
             <br />
             <Center>
               <Avatar
                 size={"2xl"}
-                name={user ? user?.displayName : ""}
-                src={user?.photoURL}
+                name={user ? user?.displayName ?? "" : ""}
+                src={user?.photoURL ?? ""}
               />
             </Center>
             <br />
@@ -65,7 +61,7 @@ const AvatarMenu: React.FC<AvatarMenuProps> = () => {
             <MenuItem
               onClick={() => router.push(`/library/${user?.displayName}`)}
             >
-              Your Library
+              Your Bookshelf
             </MenuItem>
 
             <AvatarModal />

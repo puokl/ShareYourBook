@@ -1,34 +1,25 @@
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import {
   Input,
   Button,
   Modal,
   useDisclosure,
-  ModalFooter,
   ModalContent,
   ModalOverlay,
   Flex,
+  Text,
+  ModalHeader,
 } from "@chakra-ui/react";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { getAuth } from "firebase/auth";
 import { app } from "../../firebase/firebaseConfig";
 import { AuthContext } from "@/context/AuthContext";
-const SignUpModal: React.FC = () => {
-  const { signUpForm, setSignUpForm, modalRegister } = useContext(AuthContext);
-  const auth = getAuth(app);
+import { CustomInput } from "@/utils/CustomComponent";
 
-  const [error, setError] = useState("");
+const SignUpModal: React.FC = () => {
+  const { signUpForm, setSignUpForm, modalRegister, error } =
+    useContext(AuthContext);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  //   // firebase logic
-  //   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-  //     event.preventDefault();
-  //     if (error) setError("");
-  //     if (signUpForm.password !== signUpForm.confirmPassword) {
-  //       setError("Passwords do not match");
-  //       return;
-  //     }
-  //     // passwords match
-  //     modalRegister();
-  //   };
+  const auth = getAuth(app);
 
   const handleInput = (event: any) => {
     let newInput = { [event.target.name]: event.target.value };
@@ -42,14 +33,27 @@ const SignUpModal: React.FC = () => {
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
+          <ModalHeader textAlign="center">Sign Up</ModalHeader>
           <Flex
+            pr={3}
+            pl={3}
             direction="column"
             width="100%"
             mb={4}
             justifyContent="center"
             textAlign="center"
           >
-            <Input
+            <CustomInput
+              name="name"
+              placeholder="Name"
+              onChange={(event) => handleInput(event)}
+            />
+            <CustomInput
+              name="email"
+              placeholder="Email"
+              onChange={(event) => handleInput(event)}
+            />
+            {/* <Input
               name="name"
               placeholder="Name"
               onChange={(event) => handleInput(event)}
@@ -70,24 +74,30 @@ const SignUpModal: React.FC = () => {
               bg="gray.50"
               width="70%"
               justifyContent="center"
-            />
-            <Input
+            /> */}
+
+            {/* <Input
               name="email"
               placeholder="Email"
               onChange={(event) => handleInput(event)}
-            />
-            <Input
+            /> */}
+            <CustomInput
               name="password"
               placeholder="Password"
               onChange={(event) => handleInput(event)}
             />
-            <Input
+            <CustomInput
               name="confirmPassword"
               placeholder="confirm Password"
               onChange={(event) => handleInput(event)}
             />
+            {error && (
+              <Text as="b" color="tomato">
+                {error}
+              </Text>
+            )}
             <br />
-            <Button onClick={modalRegister}>Login</Button>
+            <Button onClick={modalRegister}>Sign Up</Button>
             <br />
           </Flex>
         </ModalContent>

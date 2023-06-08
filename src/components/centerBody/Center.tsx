@@ -1,51 +1,39 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
-  Button,
-  Card,
-  CardBody,
   Flex,
   Text,
   useToast,
   Spinner,
-  VStack,
-  Image,
-  AspectRatio,
-  Input,
-  HStack,
+  Box,
+  textDecoration,
+  Divider,
+  Stack,
 } from "@chakra-ui/react";
 import {
   arrayUnion,
   collection,
   doc,
-  getDoc,
   getDocs,
   onSnapshot,
-  setDoc,
   updateDoc,
 } from "firebase/firestore";
 import { database } from "@/firebase/firebaseConfig";
-import { AuthContext } from "@/context/AuthContext";
-import { AiOutlineHeart } from "react-icons/ai";
-import { GoComment } from "react-icons/go";
-import moment from "moment";
-import Comment from "./Comments";
+import { getAuth } from "firebase/auth";
 import Book from "./Books";
 import { BookType } from "@/types/bookType";
 import { UserType } from "../../types/userType";
+import { BookContext } from "@/context/BookContext";
+import { AuthContext } from "@/context/AuthContext";
 
 type CenterProps = {};
 
-const Center: React.FC<CenterProps> = ({ items }) => {
-  const [firebaseData, setFirebaseData] = useState([{} as BookType]);
+const Center: React.FC<CenterProps> = () => {
   const [commentInputs, setCommentInputs] = useState({});
-  const [isLoading, setIsLoading] = useState(true);
-
-  const [showAllComments, setShowAllComments] = useState(false);
-  const { user } = useContext(AuthContext);
-  const toast = useToast();
-
-  const [userimg, setUserimg] = useState([]);
   const [userAvatar, setUserAvatar] = useState<UserType[]>([]);
+  const { user, userIsLoading } = useContext(AuthContext);
+  const { bookCollection, isLoading } = useContext(BookContext);
+  const toast = useToast();
+  const auth = getAuth();
 
   const addComment = (itemId: string) => {
     const comment = commentInputs[itemId];
@@ -58,6 +46,7 @@ const Center: React.FC<CenterProps> = ({ items }) => {
           text: comment,
           date: new Date().toISOString(),
           username: user?.displayName,
+          email: user?.email,
         }),
       })
         .then(() => {
@@ -86,18 +75,12 @@ const Center: React.FC<CenterProps> = ({ items }) => {
     }
   };
 
-  const deleteComment = (itemId, commentIndex) => {
-    const bookDocRef = doc(database, "books", itemId);
-
-    // Get the current comments from the state
+  const deleteComment = (bookId, commentIndex) => {
+    const bookDocRef = doc(database, "books", bookId);
     const currentComments =
-      firebaseData.find((item) => item.id === itemId)?.comment || [];
-
-    // Remove the specific comment from the array
+      bookCollection.find((item) => item.id === bookId)?.comment || [];
     const updatedComments = [...currentComments];
     updatedComments.splice(commentIndex, 1);
-
-    // Update the document in Firebase with the updated comments array
     updateDoc(bookDocRef, {
       comment: updatedComments,
     })
@@ -113,62 +96,19 @@ const Center: React.FC<CenterProps> = ({ items }) => {
     setCommentInputs({ ...commentInputs, [itemId]: value });
   };
 
-  const formattedDate = (item: string) => {
-    return moment(item).fromNow();
-  };
-
-  // const handleShowMore = () => {
-  //   setVisibleComments(visibleComments + 5);
-  // };
-
-  // const handleShowLess = () => {
-  //   setVisibleComments(Math.max(visibleComments - 5, 2));
-  // };
-
-  const handleLikeClick = (item) => {
-    const booksDocRef = doc(database, "books", item.id);
-
-    updateDoc(booksDocRef, {
-      like: arrayUnion(user.email),
-    })
-      .then(() => console.log("res"))
-      .catch((err) => {
-        alert(err.message);
-        console.log("err.message", err.message);
-      });
-  };
-
-  const booksCollectionRef = collection(database, "books");
   const usersCollectionRef = collection(database, "user");
-  useEffect(() => {
-    const fetchBookData = async () => {
-      try {
-        const response = await getDocs(booksCollectionRef);
-        const data = response.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        console.log("firebaseData", firebaseData);
-        setFirebaseData(data);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error getting documents: ", error);
-        setIsLoading(false);
-      }
-    };
 
-    const unsubscribe = onSnapshot(booksCollectionRef, (snapshot) => {
-      fetchBookData();
-    });
+  const [visibleBooks, setVisibleBooks] = useState(5);
 
-    return unsubscribe;
-  }, []);
+  const loadMoreBooks = () => {
+    setVisibleBooks((prevVisibleBooks) => prevVisibleBooks + 5);
+  };
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const snapshot = await getDocs(usersCollectionRef);
-        const userData = snapshot.docs.map((doc) => doc.data() as User);
+        const userData = snapshot.docs.map((doc) => doc.data() as UserType);
         console.log("userData", userData);
         setUserAvatar(userData);
         console.log("userAvatar", userAvatar);
@@ -184,51 +124,82 @@ const Center: React.FC<CenterProps> = ({ items }) => {
     return unsubscribe;
   }, []);
 
-  //!SECTION
-
-  //ANCHOR -
-
-  const getImg = (item) =>
-    getDoc(doc(database, "user", item.email)).then(
-      (res) => res.data().photoURL
-    );
-
-  //!SECTION
   return (
-    <Flex minHeight="90vh" width="65vw" bg="gray.200" direction="column">
-      <Text>What other people think of these books</Text>
-      {isLoading ? (
-        <Flex alignItems="center" justifyContent="center" height="50vh">
-          <Spinner />
-        </Flex>
-      ) : (
-        //SECTION - BOOKS
-        <Flex direction="column">
-          {firebaseData &&
-            firebaseData?.map((item, index) => {
-              const { email } = item;
-              const user = userAvatar.find((user) => user.email === email);
-              const photoURL = user ? user.photoURL : null;
-              console.log("photoURL", photoURL);
+    <>
+      {user && (
+        <Flex direction="column" w="100%" bg="gray.200">
+          <Text
+            fontSize="2xl"
+            textAlign="center"
+            as="b"
+            color="blue.700"
+            mb={5}
+          >
+            Discover the books shared by the Community
+          </Text>
 
-              return (
-                <Book
-                  item={item}
-                  userAvatar={userAvatar}
-                  handleLikeClick={handleLikeClick}
-                  visibleComments
-                  handleShowMore
-                  handleShowLess
-                  commentInputs={commentInputs}
-                  setCommentInput={setCommentInput}
-                  addComment={addComment}
-                  deleteComment={deleteComment}
-                />
-              );
-            })}
+          {isLoading ? (
+            <Flex alignItems="center" justifyContent="center" height="50vh">
+              <Spinner />
+            </Flex>
+          ) : (
+            //SECTION - BOOKS
+            <Flex w="100%" justifyContent="space-between">
+              {/* <Stack h="100%" direction="row" w="inherit"> */}{" "}
+              <Divider orientation="vertical" borderColor="black" />
+              <Flex direction="column" w="90%">
+                {bookCollection &&
+                  bookCollection
+                    ?.slice(0, visibleBooks)
+                    .map((book: BookType, index: number) => {
+                      const { email } = book;
+                      const user = userAvatar.find(
+                        (user) => user.email === email
+                      );
+                      const photoURL = user ? user.photoURL : null;
+                      // console.log("photoURL", photoURL);
+
+                      return (
+                        <Book
+                          key={book.id}
+                          book={book}
+                          userAvatar={userAvatar}
+                          commentInputs={commentInputs}
+                          setCommentInput={setCommentInput}
+                          addComment={addComment}
+                          deleteComment={deleteComment}
+                        />
+                      );
+                    })}
+                {visibleBooks < bookCollection.length && (
+                  <Box textAlign="center" m={4}>
+                    <Text
+                      as="button"
+                      fontWeight="bold"
+                      onClick={loadMoreBooks}
+                      color="blue.800"
+                      fontSize="sm"
+                    >
+                      Show more ...
+                    </Text>
+                  </Box>
+                )}
+              </Flex>
+              <Divider orientation="vertical" borderColor="black" />
+              {/* </Stack> */}
+            </Flex>
+          )}
         </Flex>
       )}
-    </Flex>
+      {userIsLoading && !user && (
+        <Flex>
+          <Text as="b" mt={250}>
+            Please login in to join our community and discover what other people
+            likes to read!
+          </Text>
+        </Flex>
+      )}
+    </>
   );
 };
 

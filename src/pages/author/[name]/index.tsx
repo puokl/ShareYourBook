@@ -11,6 +11,8 @@ import {
   VStack,
   useToast,
   Spacer,
+  Box,
+  Divider,
 } from "@chakra-ui/react";
 import axios from "axios";
 import {
@@ -24,47 +26,39 @@ import {
 } from "firebase/firestore";
 import Link from "next/link";
 import { useContext, useEffect, useState } from "react";
-
 import "firebase/firestore";
-type indexProps = {};
+import Layout from "@/components/Layout";
+import { AuthorBookType } from "@/types/bookType";
 
-interface AuthorBookProps {
-  authors: object[];
-  covers: number[];
-  created: object;
-  key: string;
-  last_modified: object;
-  latest_revision: number;
-  revision: number;
-  title: string;
-  type: object;
-}
-
-const index: React.FC<indexProps> = () => {
+const index: React.FC = () => {
   const { setSelectedAuthor, selectedAuthor } = useContext(BookContext);
   const { user } = useContext(AuthContext);
-  const [authorBook, setAuthorBook] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [authorBook, setAuthorBook] = useState<AuthorBookType[]>([]);
   const { name, key } = selectedAuthor;
 
   const toast = useToast();
   console.log("selectedAuthor", selectedAuthor);
-  // const user = sessionStorage.getItem("user");
+
   //REVIEW - Firestore
   const bookRef = collection(database, "books");
 
-  const handleSubmitBook = (item) => {
+  const handleSubmitBook = (item: AuthorBookType) => {
     addDoc(bookRef, {
       bookName: item.title,
       date: new Date().toISOString(),
       username: user?.displayName,
-      cover: `https://covers.openlibrary.org/b/id/${item.covers}-S.jpg`,
+      cover: `https://covers.openlibrary.org/b/id/${item.covers}-M.jpg`,
       authorName: selectedAuthor.name,
       like: [],
       email: user?.email,
     })
+      // adding book id to user collection to manage user page
       .then((docRef) => {
-        console.log("docRef", docRef.id);
+        const bookdocRef = doc(database, "user", user?.email);
+        updateDoc(bookdocRef, { publishedBooks: arrayUnion(docRef.id) });
       })
+      .then((res) => console.log("res from publishedbook union", res))
       .catch((err) => {
         alert(err.message);
         console.log("err.message", err.message);
@@ -73,8 +67,8 @@ const index: React.FC<indexProps> = () => {
 
   const libraryRef = collection(database, "library");
 
-  const handleSubmitLibrary = (item) => {
-    const libraryDocRef = doc(database, "library", user?.displayName);
+  const handleSubmitLibrary = (item: AuthorBookType) => {
+    const libraryDocRef = doc(database, "library", user?.email);
 
     getDoc(libraryDocRef).then((res) => {
       if (res.exists()) {
@@ -83,7 +77,7 @@ const index: React.FC<indexProps> = () => {
             bookName: item.title,
             date: new Date().toISOString(),
             username: user?.displayName,
-            cover: `https://covers.openlibrary.org/b/id/${item.covers}-S.jpg`,
+            cover: `https://covers.openlibrary.org/b/id/${item.covers}-M.jpg`,
             authorName: selectedAuthor.name,
             email: user?.email,
           }),
@@ -92,14 +86,14 @@ const index: React.FC<indexProps> = () => {
           console.log("err.message", err.message);
         });
       } else {
-        setDoc(doc(database, "library", user?.displayName), {
+        setDoc(doc(database, "library", user?.email), {
           initialized: true,
           libri: [
             {
               bookName: item.title,
               date: new Date().toISOString(),
               username: user?.displayName,
-              cover: `https://covers.openlibrary.org/b/id/${item.covers}-S.jpg`,
+              cover: `https://covers.openlibrary.org/b/id/${item.covers}-M.jpg`,
               authorName: selectedAuthor.name,
               email: user?.email,
             },
@@ -112,7 +106,7 @@ const index: React.FC<indexProps> = () => {
     });
   };
 
-  const handleItemClickLibrary = (item) => {
+  const handleItemClickLibrary = (item: AuthorBookType) => {
     return () => {
       try {
         handleSubmitLibrary(item);
@@ -137,7 +131,7 @@ const index: React.FC<indexProps> = () => {
     };
   };
 
-  const handleItemClickBook = (item) => {
+  const handleItemClickBook = (item: AuthorBookType) => {
     return () => {
       try {
         handleSubmitBook(item);
@@ -164,7 +158,6 @@ const index: React.FC<indexProps> = () => {
   //REVIEW - Firestore
 
   useEffect(() => {
-    const user = sessionStorage.getItem("user");
     async function fetchData() {
       try {
         const response = await axios.get(
@@ -174,76 +167,109 @@ const index: React.FC<indexProps> = () => {
         // console.log("fetchedData", response);
         console.log("fetchedData", response.data.entries);
         setAuthorBook(response.data.entries);
+        setIsLoading(false);
         console.log("authorBook", authorBook);
       } catch (error) {
         console.log(error);
       }
     }
     fetchData();
-  }, [selectedAuthor]);
+  }, []);
+  // selectedAuthor
   return (
     <>
-      {name && (
-        <>
-          <VStack>
-            <Text>this is username: {user?.displayName}</Text>
+      <Layout>
+        {name && (
+          <>
+            <VStack>
+              <Box>
+                <VStack mb={7}>
+                  <Text as="b" fontSize="lg" noOfLines={2}>
+                    Select your favorites book from your chosen author and
+                    publish it to the dashboard or save it to your bookshelf.
+                  </Text>
+                  <Text>
+                    You can share your book with the community and to other
+                    people who are looking for inspiration
+                  </Text>
+                  <Text>
+                    Or you can save your books to your bookshelf to keep track
+                    of your books
+                  </Text>
+                </VStack>
+
+                <VStack>
+                  <Button>
+                    <Link href="/"> back to homepage</Link>
+                  </Button>
+                  <Text fontSize="3xl">{selectedAuthor.name}</Text>
+                  <Image
+                    boxSize="200px"
+                    objectFit="contain"
+                    src={`https://covers.openlibrary.org/a/olid/${key}-M.jpg`}
+                    fallbackSrc="/images/nocover.png"
+                  />
+                </VStack>
+              </Box>
+              <Box minWidth="70vw">
+                {authorBook &&
+                  authorBook.map((item, index) => {
+                    return (
+                      <Flex alignItems="center" mb={2} key={index}>
+                        <Image
+                          boxSize="120px"
+                          objectFit="contain"
+                          src={`https://covers.openlibrary.org/b/id/${item.covers}-M.jpg`}
+                          alt="book cover"
+                          fallbackSrc="/images/nocover.png"
+                          ml={3}
+                        />
+
+                        <Text fontSize="md" as="b">
+                          {item.title}
+                        </Text>
+                        <Spacer />
+                        <VStack>
+                          <Text
+                            fontSize="sm"
+                            color="blue.700"
+                            as="button"
+                            onClick={handleItemClickBook(item)}
+                            _hover={{
+                              bg: "lightgrey",
+                            }}
+                          >
+                            Publish
+                          </Text>
+                          <Divider />
+                          <Text
+                            fontSize="sm"
+                            color="red.700"
+                            as="button"
+                            onClick={handleItemClickLibrary(item)}
+                            _hover={{
+                              bg: "lightgrey",
+                            }}
+                          >
+                            Add to my collection
+                          </Text>
+                        </VStack>
+                      </Flex>
+                    );
+                  })}
+              </Box>
+            </VStack>
+          </>
+        )}
+        {!name && (
+          <VStack minHeight="75vh">
+            <Text fontSize="6xl">404</Text>
             <Button>
               <Link href="/"> back to homepage</Link>
             </Button>
-            <Text>This is the author page</Text>
-
-            <Text fontSize="2xl">hello from {name}</Text>
-            <Flex>
-              <Image
-                src={`https://covers.openlibrary.org/a/olid/${key}-M.jpg`}
-              />
-            </Flex>
-            <Flex>
-              <Text>
-                You can publish a book to the dashboard or add it to yout
-                library collection
-              </Text>
-            </Flex>
-            <List>
-              {authorBook &&
-                authorBook.map((item, index) => {
-                  return (
-                    <Flex alignItems="center">
-                      <Image
-                        src={`https://covers.openlibrary.org/b/id/${item.covers}-S.jpg`}
-                      />
-                      <Spacer />
-                      <ListItem
-                        cursor="pointer"
-                        _hover={{
-                          bg: "lightgrey",
-                        }}
-                        key={index}
-                        // onClick={handleItemClick(item)}
-                      >
-                        {item.title}
-                      </ListItem>
-                      <Button onClick={handleItemClickBook(item)}>
-                        Publish
-                      </Button>
-                      <Button onClick={handleItemClickLibrary(item)}>
-                        Add to my collection
-                      </Button>
-                    </Flex>
-                  );
-                })}
-            </List>
           </VStack>
-        </>
-      )}
-      {!name && (
-        <VStack>
-          <Text fontSize="6xl">404</Text>
-          <Button>
-            <Link href="/"> back to homepage</Link>
-          </Button>
-        </VStack>
-      )}
+        )}
+      </Layout>
     </>
   );
 };

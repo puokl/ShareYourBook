@@ -1,9 +1,10 @@
-import { extendTheme } from "@chakra-ui/react";
+import { extendTheme, type ThemeConfig } from "@chakra-ui/react";
 import "@fontsource/open-sans/300.css";
 import "@fontsource/open-sans/400.css";
 import "@fontsource/open-sans/700.css";
 
 export const theme = extendTheme({
+  config: { initialColorMode: "light", useSystemColorMode: false },
   colors: {
     brand: {
       100: "#ff3c00",
@@ -15,6 +16,11 @@ export const theme = extendTheme({
       body: {
         bg: "gray.200";
       }
+    },
+  },
+  components: {
+    Input: {
+      baseStyle: {},
     },
   },
 });

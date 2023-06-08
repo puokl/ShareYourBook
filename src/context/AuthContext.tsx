@@ -4,38 +4,26 @@ import {
   GoogleAuthProvider,
   GithubAuthProvider,
   signInWithPopup,
-  signInWithEmailAndPassword,
   updateProfile,
   User,
   onAuthStateChanged,
   signOut,
+  signInWithEmailAndPassword,
 } from "firebase/auth";
 import { app, database } from "../firebase/firebaseConfig";
 import { useRouter } from "next/router";
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  ReactNode,
-} from "react";
-import { setDoc, doc, addDoc, getDoc, collection } from "firebase/firestore";
+import { createContext, useEffect, useState, ReactNode } from "react";
+import { setDoc, doc, getDoc, collection } from "firebase/firestore";
 import { User as FirebaseUser } from "firebase/auth";
-
-interface SignUpForm {
-  name: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-}
+import { SignUpFormType } from "@/types/userType";
+import { login } from "./AuthFunctions";
 
 interface AuthContextProps {
-  register: () => void;
   signUpWithGoogle: () => void;
   signUpWithGithub: () => void;
   modalRegister: () => void;
-  signUpForm: SignUpForm;
-  setSignUpForm: React.Dispatch<React.SetStateAction<SignUpForm>>;
+  signUpForm: SignUpFormType;
+  setSignUpForm: React.Dispatch<React.SetStateAction<SignUpFormType>>;
   logout: () => void;
   login: () => void;
   error: string;
@@ -44,11 +32,21 @@ interface AuthContextProps {
   setAvatar: React.Dispatch<React.SetStateAction<string>>;
   user: User | null;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  userIsLoading: boolean;
 }
 
 interface AuthContextProviderProps {
   children: ReactNode;
 }
+
+type AvatarUploadedType = {
+  lastModified: number;
+  lastModifiedDate: string;
+  name: string;
+  size: number;
+  type: string;
+  webkitRelativePath: string;
+};
 
 export const AuthContext = createContext<AuthContextProps>(
   {} as AuthContextProps
@@ -56,27 +54,31 @@ export const AuthContext = createContext<AuthContextProps>(
 
 export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
   const [error, setError] = useState("");
-  const [avatar, setAvatar] = useState("");
+  const [avatar, setAvatar] = useState<AvatarUploadedType>();
+  const [userIsLoading, setUserIsLoading] = useState(true);
   const [user, setUser] = useState<FirebaseUser | null>(null);
-
-  const auth = getAuth(app);
-  const router = useRouter();
-  const googleProvider = new GoogleAuthProvider();
-  const githubProvider = new GithubAuthProvider();
-
-  const [signUpForm, setSignUpForm] = useState<SignUpForm>({
+  const [signUpForm, setSignUpForm] = useState<SignUpFormType>({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
 
-  //FIXME - check signUpForm.password !== signUpForm.confirmPassword
-  // if (signUpForm.password !== signUpForm.confirmPassword) {
-  //       setError("Passwords do not match");
-  //       return;
+  const auth = getAuth(app);
+  const router = useRouter();
+  const googleProvider = new GoogleAuthProvider();
+  const githubProvider = new GithubAuthProvider();
 
   const modalRegister = () => {
+    //TODO - check for name mandatory
+    if (!signUpForm.name) {
+      setError("Please add a username");
+      return;
+    }
+    if (signUpForm.password !== signUpForm.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
     const userRef = collection(database, "user");
     createUserWithEmailAndPassword(auth, signUpForm.email, signUpForm.password)
       .then(() => {
@@ -89,94 +91,103 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
         console.log("user on register", user);
         return Promise.resolve({ user });
       })
-      // .then((res) =>
-      //   addDoc(userRef, {
-      //     email: "hi",
-      //     photoURL: "./images/avatar.jpeg",
-      //     username: "hello",
-      //     // lastSignInTime: res.lastSignInTime,
-      //     // creationTime: res.creationTime,
-      //   })
-      // )
+
       .then((res) => {
         const user = res.user;
 
         setDoc(doc(database, "user", signUpForm.email), {
-          email: user.email,
-          photoURL: "./images/avatar.jpeg",
+          email: user?.email,
+          photoURL: "",
+          // photoURL: "./images/avatar.jpeg",
           username: signUpForm.name,
+          firstLoginDate: new Date(),
+          publishedBooks: [],
         });
 
         // console.log("setDoc done");
       })
-      .then((res) => {
+      .then(() => {
         router.push("/");
-      })
-      .catch((error) => console.log("Error on modalRegister", error.message));
-  };
-
-  const register = () => {
-    createUserWithEmailAndPassword(auth, signUpForm.email, signUpForm.password)
-      .then((res) => {
-        console.log(res.user);
-        sessionStorage.setItem("Token", res.user.accessToken);
-        // alert("Registration completed");
-
-        router.push("/");
-      })
-
-      .catch((error) =>
-        console.log(
-          "Error on createUserWithEmailAndPassword(): ",
-          error.message
-        )
-      );
-  };
-
-  // const login = () => {
-  //   signInWithEmailAndPassword(auth, signUpForm.email, signUpForm.password)
-  //     .then((res) => {
-  //       //   const user = userCredential.user;
-  //       console.log("login user", user);
-  //       setUser(res.user);
-  //       router.push("/");
-  //     })
-
-  //     .catch((error) => {
-  //       console.log("Error on signInWithEmailAndPassword()", error.message);
-  //       setUser(null);
-  //     });
-  // };
-
-  const login = () => {
-    signInWithEmailAndPassword(auth, signUpForm.email, signUpForm.password)
-      .then((userCredential) => {
-        // Retrieve the user document from Firestore
-        const userDocRef = doc(database, "user", userCredential.user.email);
-        return getDoc(userDocRef).then((userDocSnap) => {
-          // Update the lastLoginDate field
-          return setDoc(
-            userDocRef,
-            { lastLoginDate: new Date() },
-            { merge: true }
-          ).then(() => {
-            setUser(userCredential.user);
-            router.push("/");
-          });
-        });
       })
       .catch((error) => {
-        console.log("Error on signInWithEmailAndPassword()", error.message);
-        setUser(null);
+        setError(error.message);
+        console.log("Error on modalRegister", error.message);
       });
+  };
+
+  // const loginHandler = () => {
+  //   login(signUpForm, setUser, setDoc, getDoc, database, router);
+  // };
+  const login = () => {
+    signInWithEmailAndPassword(
+      auth,
+      signUpForm.email,
+      signUpForm.password
+    ).then((res) => {
+      if (res.user.email) {
+        const userDocRef = doc(database, "user", res.user.email);
+        return getDoc(userDocRef)
+          .then((userDocSnap) => {
+            // Update the lastLoginDate field
+            return setDoc(
+              userDocRef,
+              { lastLoginDate: new Date() },
+              { merge: true }
+            ).then((res) => {
+              setUser(res.user);
+              setUserIsLoading(false);
+              router.push("/");
+            });
+          })
+          .catch((error) => {
+            setError(error);
+            console.log("Error on signInWithEmailAndPassword()", error.message);
+            setUser(null);
+          });
+      } else {
+        setError(error);
+        console.log(
+          "signInWithEmailAndPassword error",
+          "cannot find the user email"
+        );
+      }
+    });
   };
 
   const signUpWithGoogle = () => {
     signInWithPopup(auth, googleProvider)
       .then((res) => {
-        console.log("res.user", res.user);
-        setUser(res.user);
-        router.push("/");
+        const userDocRef = doc(database, "user", res.user.email);
+
+        // Check if the user document exists
+        return getDoc(userDocRef).then((userDocSnap) => {
+          if (userDocSnap.exists()) {
+            // User document exists, update the lastLoginDate field
+            return setDoc(
+              userDocRef,
+              { lastLoginDate: new Date() },
+              { merge: true }
+            ).then(() => {
+              setUser(res.user);
+              setUserIsLoading(false);
+              router.push("/");
+            });
+          } else {
+            // User document does not exist, perform first-time login actions
+
+            const userData = {
+              email: userEmail,
+              firstLoginDate: new Date(),
+              username: res.user.displayName,
+              publishedBooks: [],
+            };
+
+            return setDoc(userDocRef, userData).then(() => {
+              setUser(res.user);
+              router.push("/");
+            });
+          }
+        });
       })
       .catch((error) =>
         console.log("Error on signUpWithGoogle(): ", error.message)
@@ -186,9 +197,34 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
   const signUpWithGithub = () => {
     signInWithPopup(auth, githubProvider)
       .then((res) => {
-        console.log("res.user", res.user);
-        setUser(res.user);
-        router.push("/");
+        const userEmail = res.user.email;
+        const userDocRef = doc(database, "user", userEmail);
+
+        return getDoc(userDocRef).then((userDocSnap) => {
+          if (userDocSnap.exists()) {
+            return setDoc(
+              userDocRef,
+              { lastLoginDate: new Date() },
+              { merge: true }
+            ).then(() => {
+              setUser(res.user);
+              setUserIsLoading(false);
+              router.push("/");
+            });
+          } else {
+            const userData = {
+              email: userEmail,
+              firstLoginDate: new Date(),
+              username: res.user.displayName,
+              publishedBooks: [],
+            };
+
+            return setDoc(userDocRef, userData).then(() => {
+              setUser(res.user);
+              router.push("/");
+            });
+          }
+        });
       })
       .catch((error) =>
         console.log("Error on signUpWithGithub()", error.message)
@@ -196,11 +232,11 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
   };
 
   const checkIfUserIsLoggedIn = () => {
+    console.log("%cchecking userisloggedin", "color:red");
     onAuthStateChanged(auth, (user) => {
       if (user) {
         const uid = user.uid;
         console.log("user is logged in", user);
-        console.log("user email", user.email);
         setUser(user);
       } else {
         console.log("user is not logged in");
@@ -213,7 +249,9 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
     signOut(auth)
       .then(() => {
         setUser(null);
+        setUserIsLoading(true);
         console.log("logout succesfully");
+        router.push("/");
       })
       .catch((error) => {
         console.log("error logging out", error.message);
@@ -232,7 +270,6 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
         login,
         signUpWithGoogle,
         signUpWithGithub,
-        register,
         signUpForm,
         setSignUpForm,
         modalRegister,
@@ -242,6 +279,8 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
         setAvatar,
         user,
         setUser,
+        userIsLoading,
+        // loginHandler,
       }}
     >
       {children}

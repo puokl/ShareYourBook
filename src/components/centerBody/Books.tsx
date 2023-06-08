@@ -1,27 +1,21 @@
-import { Flex, Image, Text, HStack, Button, Input } from "@chakra-ui/react";
-import React, { useState } from "react";
-import { formattedDate } from "./../../utils/utils";
-import { GoComment } from "react-icons/go";
-import { AiOutlineHeart } from "react-icons/ai";
+import { useState } from "react";
+import { Flex, Button, Input, Divider } from "@chakra-ui/react";
 import Comment from "./Comments";
 import BookBody from "./BookBody";
-import { BookType, SignleCommentType } from "@/types/bookType";
+import { BookType } from "@/types/bookType";
 
 type BookProps = {
-  item: BookType;
+  book: BookType & { id: string };
   userAvatar: any[];
   handleLikeClick: (item: any) => void;
-  visibleComments: number;
   deleteComment: (itemId: string, commentIndex: number) => void;
-  handleShowMore: () => void;
-  handleShowLess: () => void;
   commentInputs: Record<string, string>;
   setCommentInput: (itemId: string, value: string) => void;
   addComment: (itemId: string) => void;
 };
 
 const Book: React.FC<BookProps> = ({
-  item,
+  book,
   userAvatar,
   handleLikeClick,
   deleteComment,
@@ -30,7 +24,7 @@ const Book: React.FC<BookProps> = ({
   addComment,
 }) => {
   const [visibleComments, setVisibleComments] = useState(2);
-  const { email } = item;
+  const { email } = book;
   const user = userAvatar.find((user) => user.email === email);
   const photoURL = user ? user.photoURL : null;
 
@@ -41,64 +35,84 @@ const Book: React.FC<BookProps> = ({
   const handleShowLess = () => {
     setVisibleComments(Math.max(visibleComments - 5, 2));
   };
+  const [showComments, setShowComments] = useState<boolean>(false);
+  const handleShowComments = () => {
+    setShowComments(!showComments);
+  };
 
   return (
-    <Flex key={item.id} direction="column">
+    <Flex key={book.id} direction="column" mb={4}>
       <BookBody
-        item={item}
-        handleLikeClick={handleLikeClick}
+        book={book}
         photoURL={photoURL}
+        setShowComments={setShowComments}
+        showComments
+        handleShowComments={handleShowComments}
       />
 
       {/* COMMENTS SECTION */}
-      <Flex direction="column">
-        {item.comment &&
-          item.comment
-            .slice(0, visibleComments)
-            .map((comment, commentIndex) => {
-              const commentUser = userAvatar.find(
-                (user) => user.username === comment.username
-              );
-              const commentUserPhotoURL = commentUser
-                ? commentUser.photoURL
-                : null;
-              return (
-                <Comment
-                  key={commentIndex}
-                  comment={comment}
-                  commentIndex={commentIndex}
-                  commentUserPhotoURL={commentUserPhotoURL}
-                  deleteComment={(commentIndex) =>
-                    deleteComment(item.id, commentIndex)
-                  }
-                />
-              );
-            })}
-        {item.comment && item.comment.length > visibleComments && (
-          <Flex justifyContent="center">
-            <Button size="sx" onClick={handleShowMore}>
-              Show More
-            </Button>
-          </Flex>
-        )}
+      {/* {console.log("showComments", showComments)} */}
+      {showComments && (
+        <Flex direction="column">
+          {book.comment &&
+            book.comment
+              .slice(0, visibleComments)
+              .map((comment, commentIndex) => {
+                const commentUser = userAvatar.find(
+                  (user) => user.username === comment.username
+                );
+                const commentUserPhotoURL = commentUser
+                  ? commentUser.photoURL
+                  : null;
+                return (
+                  <Comment
+                    bookId={book.id}
+                    comment={comment}
+                    commentIndex={commentIndex}
+                    commentUserPhotoURL={commentUserPhotoURL}
+                    deleteComment={(commentIndex) =>
+                      deleteComment(book.id, commentIndex)
+                    }
+                  />
+                );
+              })}
+          {book.comment && book.comment.length > visibleComments && (
+            <Flex justifyContent="center">
+              <Button size="sx" onClick={handleShowMore}>
+                Show More
+              </Button>
+            </Flex>
+          )}
 
-        {visibleComments > 2 && (
-          <Flex justifyContent="center">
-            <Button size="sx" onClick={handleShowLess}>
-              Show Less
-            </Button>
-          </Flex>
-        )}
-      </Flex>
-      <Flex bg="white">
+          {visibleComments > 2 && (
+            <Flex justifyContent="center">
+              <Button size="sx" onClick={handleShowLess}>
+                Show Less
+              </Button>
+            </Flex>
+          )}
+        </Flex>
+      )}
+      <Flex bg="white" h={7} m={2} bg="gray.100">
         <Input
+          placeholder="Join the discussion"
+          h="auto"
           type="text"
-          value={commentInputs[item.id] || ""}
-          onChange={(e) => setCommentInput(item.id, e.target.value)}
+          value={commentInputs[book.id] || ""}
+          onChange={(e) => setCommentInput(book.id, e.target.value)}
         />
-
-        <Button onClick={() => addComment(item.id)}>Add Comment</Button>
+        {/* <Text
+          as="button"
+          onClick={() => addComment(book.id)}
+          h={7}
+          fontSize="sm"
+          fontWeight="bold"
+        ></Text> */}
+        <Button onClick={() => addComment(book.id)} h={7} bg="gray.300">
+          Add Comment
+        </Button>
       </Flex>
+      <Divider borderColor="blue.700" />
     </Flex>
   );
 };

@@ -16,15 +16,16 @@ import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { AuthContext } from "@/context/AuthContext";
 import { getAuth, updateProfile } from "firebase/auth";
 import { doc, updateDoc } from "firebase/firestore";
+import Router from "next/router";
 
 type AvatarModalProps = {};
 
 const AvatarModal: React.FC<AvatarModalProps> = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { avatar, setAvatar, logout } = useContext(AuthContext);
+  const auth = getAuth();
 
   const handleSubmitAvatar = () => {
-    // const storageRef = ref(storage, data.name);
     // to store it inside a images folder
     const storageRef = ref(storage, `images/${avatar.name}`);
     const uploadTask = uploadBytesResumable(storageRef, avatar);
@@ -43,7 +44,6 @@ const AvatarModal: React.FC<AvatarModalProps> = () => {
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
           setAvatar(downloadURL);
           console.log("File available at", downloadURL);
-          const auth = getAuth();
           updateProfile(auth.currentUser, {
             photoURL: downloadURL,
           })
@@ -53,9 +53,10 @@ const AvatarModal: React.FC<AvatarModalProps> = () => {
               updateDoc(userDocRef, { photoURL: downloadURL });
             })
             .then(() => console.log("auth on avatarmodal", auth))
+            .then(() => Router.reload())
             .catch((error) => console.log(error));
 
-          onClose();
+          // onClose();
         });
       }
     );
@@ -81,6 +82,7 @@ const AvatarModal: React.FC<AvatarModalProps> = () => {
             />
             <br />
             <Button onClick={handleSubmitAvatar}>Add avatar</Button>
+            {console.log("avatar", avatar)}
           </ModalFooter>
         </ModalContent>
       </Modal>

@@ -19,17 +19,20 @@ import axios from "axios";
 import { BookContext } from "@/context/BookContext";
 import { useRouter } from "next/router";
 import Layout from "../Layout";
+import { AuthContext } from "@/context/AuthContext";
 
 type SearchInputProps = {
   user?: User | null;
 };
 
-const SearchInput: React.FC<SearchInputProps> = ({ user }) => {
+const SearchInput: React.FC<SearchInputProps> = ({}) => {
   const router = useRouter();
   const [inputValue, setInputValue] = useState<string>("");
   const [fetchedData, setFetchedData] = useState([]);
-  const { setAuthorName, setSelectedAuthor } = useContext(BookContext);
+  const { setAuthorName, setSelectedAuthor, selectedAuthor } =
+    useContext(BookContext);
   const [isModalOpen, setIsModalOpen] = useState(true);
+  const { user } = useContext(AuthContext);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const ref = useRef<RefObject<HTMLElement>>();
@@ -46,7 +49,7 @@ const SearchInput: React.FC<SearchInputProps> = ({ user }) => {
 
         // console.log("fetchedData", response.data.docs);
         setFetchedData(response.data.docs);
-        setAuthorName(response.data.docs);
+        // setAuthorName(response.data.docs);
         console.log("fetchedData", response.data.docs);
       } catch (error) {
         console.log(error);
@@ -68,32 +71,34 @@ const SearchInput: React.FC<SearchInputProps> = ({ user }) => {
   return (
     <VStack flexGrow={1} width="auto" mr={2} align="center">
       <VStack width="600px">
-        <InputGroup>
-          <InputLeftElement
-            pointerEvents="none"
-            children={<SearchIcon color="gray.400" mb={1} />}
-          />
-          <Input
-            onClick={() => setIsModalOpen(true)}
-            value={inputValue}
-            onChange={handleChange}
-            placeholder="Search a Book"
-            fontSize="10pt"
-            _placeholder={{ color: "gray.500" }}
-            _hover={{
-              bg: "white",
-              border: "1px solid",
-              borderColor: "blue.500",
-            }}
-            _focus={{
-              outline: "none",
-              border: "1px solid",
-              borderColor: "blue.500",
-            }}
-            height="34px"
-            bg="gray.50"
-          />
-        </InputGroup>
+        {user && (
+          <InputGroup>
+            <InputLeftElement
+              pointerEvents="none"
+              children={<SearchIcon color="gray.400" mb={1} />}
+            />
+            <Input
+              onClick={() => setIsModalOpen(true)}
+              value={inputValue}
+              onChange={handleChange}
+              placeholder="Search a Book by Author"
+              fontSize="10pt"
+              _placeholder={{ color: "gray.500" }}
+              _hover={{
+                bg: "white",
+                border: "1px solid",
+                borderColor: "blue.500",
+              }}
+              _focus={{
+                outline: "none",
+                border: "1px solid",
+                borderColor: "blue.500",
+              }}
+              height="34px"
+              bg="gray.50"
+            />
+          </InputGroup>
+        )}
         {/* <button onClick={() => setIsModalOpen(true)}>Open Modal</button>
         {fetchedData.length > 0: setIsModalOpen(true) ? setIsModalOpen(false)} */}
         {fetchedData.length > 0 && isModalOpen && (
@@ -120,7 +125,7 @@ const SearchInput: React.FC<SearchInputProps> = ({ user }) => {
                   onClick={() => {
                     router.push(`/author/${item.name}`);
                     setSelectedAuthor(item);
-                    console.log("selected item", item.name);
+                    console.log("selected item", selectedAuthor);
                   }}
                 >
                   {item.name}
