@@ -35,8 +35,9 @@ const Center: React.FC<CenterProps> = () => {
   const toast = useToast();
   const auth = getAuth();
 
+  //FIXME - as any
   const addComment = (itemId: string) => {
-    const comment = commentInputs[itemId];
+    const comment = (commentInputs as any)[itemId];
     if (comment) {
       const bookDocRef = doc(database, "books", itemId);
 
@@ -128,6 +129,7 @@ const Center: React.FC<CenterProps> = () => {
     <>
       {user && (
         <Flex direction="column" w="100%" bg="gray.200">
+          {console.log("commentInputs", commentInputs)}
           <Text
             fontSize="2xl"
             textAlign="center"
