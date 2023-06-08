@@ -14,7 +14,7 @@ type BookProps = {
   addComment: (itemId: string) => void;
 };
 
-const Book: React.FC<BookProps> = ({
+const Books: React.FC<BookProps> = ({
   book,
   userAvatar,
   handleLikeClick,
@@ -117,4 +117,4 @@ const Book: React.FC<BookProps> = ({
   );
 };
 
-export default Book;
+export default Books;

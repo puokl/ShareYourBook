@@ -19,7 +19,7 @@ import {
 } from "firebase/firestore";
 import { database } from "@/firebase/firebaseConfig";
 import { getAuth } from "firebase/auth";
-import Book from "./Books";
+import Books from "./Books";
 import { BookType } from "@/types/bookType";
 import { UserType } from "../../types/userType";
 import { BookContext } from "@/context/BookContext";
@@ -160,7 +160,7 @@ const Center: React.FC<CenterProps> = () => {
                       // console.log("photoURL", photoURL);
 
                       return (
-                        <Book
+                        <Books
                           key={book.id}
                           book={book}
                           userAvatar={userAvatar}
