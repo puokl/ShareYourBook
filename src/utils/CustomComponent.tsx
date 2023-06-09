@@ -1,6 +1,6 @@
 import { Input } from "@chakra-ui/react";
 
-export const CustomInput = (props) => {
+export const CustomInput = (props: any) => {
   return (
     <Input
       mr={4}
