@@ -5,9 +5,8 @@ import BookBody from "./BookBody";
 import { BookType } from "@/types/bookType";
 
 type BookProps = {
-  book: BookType & { id: string };
+  book: BookType;
   userAvatar: any[];
-  handleLikeClick: (item: any) => void;
   deleteComment: (itemId: string, commentIndex: number) => void;
   commentInputs: Record<string, string>;
   setCommentInput: (itemId: string, value: string) => void;
@@ -17,7 +16,6 @@ type BookProps = {
 const Books: React.FC<BookProps> = ({
   book,
   userAvatar,
-  handleLikeClick,
   deleteComment,
   commentInputs,
   setCommentInput,

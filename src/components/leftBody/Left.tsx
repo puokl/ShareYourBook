@@ -22,7 +22,7 @@ const BookList = () => {
   let sortedBooks = [...bookCollection];
   if (orderBy === "mostRecent") {
     sortedBooks = sortedBooks.sort(
-      (a, b) => new Date(b.date) - new Date(a.date)
+      (a, b) => +new Date(b.date) - +new Date(a.date)
     );
   } else if (orderBy === "mostCommented") {
     sortedBooks = sortedBooks.sort((a, b) => {
@@ -39,7 +39,7 @@ const BookList = () => {
     setBookCollection(sortedBooks);
   }, [orderBy, setBookCollection]);
 
-  const handleOrderChange = (option) => {
+  const handleOrderChange = (option: string) => {
     setOrderBy(option);
   };
 

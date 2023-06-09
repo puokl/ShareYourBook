@@ -17,9 +17,7 @@ import AvatarModal from "../modal/AvatarModal";
 import { TbLogout } from "react-icons/tb";
 import { useRouter } from "next/router";
 
-type AvatarMenuProps = {};
-
-const AvatarMenu: React.FC<AvatarMenuProps> = () => {
+const AvatarMenu: React.FC = () => {
   const { logout, user } = useContext(AuthContext);
   const router = useRouter();
 

@@ -13,10 +13,9 @@ import {
 import { app, database } from "../firebase/firebaseConfig";
 import { useRouter } from "next/router";
 import { createContext, useEffect, useState, ReactNode } from "react";
-import { setDoc, doc, getDoc, collection } from "firebase/firestore";
+import { setDoc, doc, getDoc } from "firebase/firestore";
 import { User as FirebaseUser } from "firebase/auth";
 import { SignUpFormType } from "@/types/userType";
-import { login } from "./AuthFunctions";
 
 interface AuthContextProps {
   signUpWithGoogle: () => void;
@@ -26,10 +25,9 @@ interface AuthContextProps {
   setSignUpForm: React.Dispatch<React.SetStateAction<SignUpFormType>>;
   logout: () => void;
   login: () => void;
-  error: string;
+  error: any;
   setError: React.Dispatch<React.SetStateAction<string>>;
-  avatar: string;
-  setAvatar: React.Dispatch<React.SetStateAction<string>>;
+
   user: User | null;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   userIsLoading: boolean;
@@ -39,22 +37,13 @@ interface AuthContextProviderProps {
   children: ReactNode;
 }
 
-type AvatarUploadedType = {
-  lastModified: number;
-  lastModifiedDate: string;
-  name: string;
-  size: number;
-  type: string;
-  webkitRelativePath: string;
-};
-
 export const AuthContext = createContext<AuthContextProps>(
   {} as AuthContextProps
 );
 
 export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
   const [error, setError] = useState("");
-  const [avatar, setAvatar] = useState<AvatarUploadedType>();
+  // const [avatar, setAvatar] = useState<AvatarUploadedType | null>(null);
   const [userIsLoading, setUserIsLoading] = useState(true);
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [signUpForm, setSignUpForm] = useState<SignUpFormType>({
@@ -70,7 +59,6 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
   const githubProvider = new GithubAuthProvider();
 
   const modalRegister = () => {
-    //TODO - check for name mandatory
     if (!signUpForm.name) {
       setError("Please add a username");
       return;
@@ -79,7 +67,6 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
       setError("Passwords do not match");
       return;
     }
-    const userRef = collection(database, "user");
     createUserWithEmailAndPassword(auth, signUpForm.email, signUpForm.password)
       .then(() => {
         updateProfile(auth.currentUser as User, {
@@ -89,13 +76,8 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
       .then(() => {
         const user = auth.currentUser;
         console.log("user on register", user);
-        return Promise.resolve({ user });
-      })
 
-      .then((res) => {
-        const user = res.user;
-
-        setDoc(doc(database, "user", signUpForm.email), {
+        return setDoc(doc(database, "user", signUpForm.email), {
           email: user?.email,
           photoURL: "",
           // photoURL: "./images/avatar.jpeg",
@@ -103,8 +85,6 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
           firstLoginDate: new Date(),
           publishedBooks: [],
         });
-
-        // console.log("setDoc done");
       })
       .then(() => {
         router.push("/");
@@ -115,9 +95,45 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
       });
   };
 
-  // const loginHandler = () => {
-  //   login(signUpForm, setUser, setDoc, getDoc, database, router);
+  // const modalRegister = async () => {
+  //   if (!signUpForm.name) {
+  //     setError("Please add a username");
+  //     return;
+  //   }
+  //   if (signUpForm.password !== signUpForm.confirmPassword) {
+  //     setError("Passwords do not match");
+  //     return;
+  //   }
+
+  //   try {
+  //     await createUserWithEmailAndPassword(
+  //       auth,
+  //       signUpForm.email,
+  //       signUpForm.password
+  //     );
+  //     await updateProfile(auth.currentUser as User, {
+  //       displayName: signUpForm.name,
+  //     });
+
+  //     const user = auth.currentUser;
+  //     console.log("user on register", user);
+
+  //     await setDoc(doc(database, "user", signUpForm.email), {
+  //       email: user?.email,
+  //       photoURL: "",
+  //       // photoURL: "./images/avatar.jpeg",
+  //       username: signUpForm.name,
+  //       firstLoginDate: new Date(),
+  //       publishedBooks: [],
+  //     });
+
+  //     router.push("/");
+  //   } catch (error) {
+  //     setError(error.message);
+  //     console.log("Error on modalRegister", error.message);
+  //   }
   // };
+
   const login = () => {
     signInWithEmailAndPassword(
       auth,
@@ -127,17 +143,11 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
       if (res.user.email) {
         const userDocRef = doc(database, "user", res.user.email);
         return getDoc(userDocRef)
-          .then((userDocSnap) => {
-            // Update the lastLoginDate field
-            return setDoc(
-              userDocRef,
-              { lastLoginDate: new Date() },
-              { merge: true }
-            ).then((res) => {
-              setUser(res.user);
-              setUserIsLoading(false);
-              router.push("/");
-            });
+          .then(() => {
+            setDoc(userDocRef, { lastLoginDate: new Date() }, { merge: true });
+            setUser(res.user);
+            setUserIsLoading(false);
+            router.push("/");
           })
           .catch((error) => {
             setError(error);
@@ -154,40 +164,75 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
     });
   };
 
+  // const login = async () => {
+  //   try {
+  //     const res = await signInWithEmailAndPassword(
+  //       auth,
+  //       signUpForm.email,
+  //       signUpForm.password
+  //     );
+
+  //     if (res.user.email) {
+  //       const userDocRef = doc(database, "user", res.user.email);
+  //       await getDoc(userDocRef);
+  //       await setDoc(
+  //         userDocRef,
+  //         { lastLoginDate: new Date() },
+  //         { merge: true }
+  //       );
+
+  //       setUser(res.user);
+  //       setUserIsLoading(false);
+  //       router.push("/");
+  //     } else {
+  //       setError("Cannot find the user email");
+  //       console.log(
+  //         "signInWithEmailAndPassword error: cannot find the user email"
+  //       );
+  //     }
+  //   } catch (error) {
+  //     setError(error);
+  //     console.log("Error on signInWithEmailAndPassword()", error.message);
+  //     setUser(null);
+  //   }
+  // };
+
   const signUpWithGoogle = () => {
     signInWithPopup(auth, googleProvider)
       .then((res) => {
-        const userDocRef = doc(database, "user", res.user.email);
+        if (res.user.email) {
+          const userDocRef = doc(database, "user", res.user.email);
 
-        // Check if the user document exists
-        return getDoc(userDocRef).then((userDocSnap) => {
-          if (userDocSnap.exists()) {
-            // User document exists, update the lastLoginDate field
-            return setDoc(
-              userDocRef,
-              { lastLoginDate: new Date() },
-              { merge: true }
-            ).then(() => {
-              setUser(res.user);
-              setUserIsLoading(false);
-              router.push("/");
-            });
-          } else {
-            // User document does not exist, perform first-time login actions
+          // Check if the user document exists
+          return getDoc(userDocRef).then((userDocSnap) => {
+            if (userDocSnap.exists()) {
+              // User document exists, update the lastLoginDate field
+              return setDoc(
+                userDocRef,
+                { lastLoginDate: new Date() },
+                { merge: true }
+              ).then(() => {
+                setUser(res.user);
+                setUserIsLoading(false);
+                router.push("/");
+              });
+            } else {
+              // User document does not exist, perform first-time login actions
 
-            const userData = {
-              email: userEmail,
-              firstLoginDate: new Date(),
-              username: res.user.displayName,
-              publishedBooks: [],
-            };
+              const userData = {
+                email: res.user.email,
+                firstLoginDate: new Date(),
+                username: res.user.displayName,
+                publishedBooks: [],
+              };
 
-            return setDoc(userDocRef, userData).then(() => {
-              setUser(res.user);
-              router.push("/");
-            });
-          }
-        });
+              return setDoc(userDocRef, userData).then(() => {
+                setUser(res.user);
+                router.push("/");
+              });
+            }
+          });
+        }
       })
       .catch((error) =>
         console.log("Error on signUpWithGoogle(): ", error.message)
@@ -197,34 +242,35 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
   const signUpWithGithub = () => {
     signInWithPopup(auth, githubProvider)
       .then((res) => {
-        const userEmail = res.user.email;
-        const userDocRef = doc(database, "user", userEmail);
+        if (res.user.email) {
+          const userDocRef = doc(database, "user", res.user.email);
 
-        return getDoc(userDocRef).then((userDocSnap) => {
-          if (userDocSnap.exists()) {
-            return setDoc(
-              userDocRef,
-              { lastLoginDate: new Date() },
-              { merge: true }
-            ).then(() => {
-              setUser(res.user);
-              setUserIsLoading(false);
-              router.push("/");
-            });
-          } else {
-            const userData = {
-              email: userEmail,
-              firstLoginDate: new Date(),
-              username: res.user.displayName,
-              publishedBooks: [],
-            };
+          return getDoc(userDocRef).then((userDocSnap) => {
+            if (userDocSnap.exists()) {
+              return setDoc(
+                userDocRef,
+                { lastLoginDate: new Date() },
+                { merge: true }
+              ).then(() => {
+                setUser(res.user);
+                setUserIsLoading(false);
+                router.push("/");
+              });
+            } else {
+              const userData = {
+                email: res.user.email,
+                firstLoginDate: new Date(),
+                username: res.user.displayName,
+                publishedBooks: [],
+              };
 
-            return setDoc(userDocRef, userData).then(() => {
-              setUser(res.user);
-              router.push("/");
-            });
-          }
-        });
+              return setDoc(userDocRef, userData).then(() => {
+                setUser(res.user);
+                router.push("/");
+              });
+            }
+          });
+        }
       })
       .catch((error) =>
         console.log("Error on signUpWithGithub()", error.message)
@@ -232,7 +278,6 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
   };
 
   const checkIfUserIsLoggedIn = () => {
-    console.log("%cchecking userisloggedin", "color:red");
     onAuthStateChanged(auth, (user) => {
       if (user) {
         const uid = user.uid;
@@ -261,6 +306,7 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
   useEffect(() => {
     checkIfUserIsLoggedIn();
     console.log("user in useEffect on AuthContext", user);
+    console.log("auth.currentUser", auth.currentUser);
   }, []);
 
   return (
@@ -275,12 +321,9 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
         modalRegister,
         error,
         setError,
-        avatar,
-        setAvatar,
         user,
         setUser,
         userIsLoading,
-        // loginHandler,
       }}
     >
       {children}

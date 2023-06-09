@@ -46,50 +46,31 @@ const SignUpModal: React.FC = () => {
             <CustomInput
               name="name"
               placeholder="Name"
-              onChange={(event) => handleInput(event)}
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                handleInput(event)
+              }
             />
             <CustomInput
               name="email"
               placeholder="Email"
-              onChange={(event) => handleInput(event)}
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                handleInput(event)
+              }
             />
-            {/* <Input
-              name="name"
-              placeholder="Name"
-              onChange={(event) => handleInput(event)}
-              mb={2}
-              fontSize="10pt"
-              _placeholder={{ color: "gray.500" }}
-              _hover={{
-                bg: "white",
-                border: "1px solid",
-                borderColor: "blue.500",
-              }}
-              _focus={{
-                outline: "none",
-                bg: "white",
-                border: "1px solid",
-                borderColor: "blue.500",
-              }}
-              bg="gray.50"
-              width="70%"
-              justifyContent="center"
-            /> */}
 
-            {/* <Input
-              name="email"
-              placeholder="Email"
-              onChange={(event) => handleInput(event)}
-            /> */}
             <CustomInput
               name="password"
               placeholder="Password"
-              onChange={(event) => handleInput(event)}
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                handleInput(event)
+              }
             />
             <CustomInput
               name="confirmPassword"
               placeholder="confirm Password"
-              onChange={(event) => handleInput(event)}
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                handleInput(event)
+              }
             />
             {error && (
               <Text as="b" color="tomato">

@@ -25,15 +25,12 @@ interface AuthorNameProps {
 }
 
 interface BookContextProps {
-  // authorName: AuthorNameProps | AuthorNameProps[];
-  // setAuthorName: React.Dispatch<React.SetStateAction<string>>;
-  // bookName: string;
-  // setBookName: React.Dispatch<React.SetStateAction<string>>;
   selectedAuthor: AuthorNameProps;
   setSelectedAuthor: React.Dispatch<React.SetStateAction<object>>;
-  bookCollection: BookType;
-  setBookCollection: React.Dispatch<React.SetStateAction<object>>;
+  bookCollection: BookType[];
+  setBookCollection: React.Dispatch<React.SetStateAction<BookType[]>>;
   isLoading: boolean;
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 interface BookContextProviderProps {
@@ -43,26 +40,23 @@ interface BookContextProviderProps {
 export const BookContext = createContext({} as BookContextProps);
 
 export const BookContextProvider = ({ children }: BookContextProviderProps) => {
-  // const [authorName, setAuthorName] = useState({});
-  // const [bookName, setBookName] = useState("");
   const [selectedAuthor, setSelectedAuthor] = useState<AuthorNameProps>({});
-
   const [bookCollection, setBookCollection] = useState<BookType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const booksCollectionRef = collection(database, "books");
 
-  const deleteBook = () => {
-    const deleteBookRef = doc(database, "books", book.id);
-    console.log("clicked");
-    return deleteDoc(deleteBookRef)
-      .then(() => {
-        console.log("doc deleted");
-      })
-      .catch((err) => {
-        console.log("err", err);
-      });
-  };
+  // const deleteBook = () => {
+  //   const deleteBookRef = doc(database, "books", book.id);
+  //   console.log("clicked");
+  //   return deleteDoc(deleteBookRef)
+  //     .then(() => {
+  //       console.log("doc deleted");
+  //     })
+  //     .catch((err) => {
+  //       console.log("err", err);
+  //     });
+  // };
 
   useEffect(() => {
     const fetchBookData = async () => {
@@ -73,11 +67,17 @@ export const BookContextProvider = ({ children }: BookContextProviderProps) => {
         console.log("res.docs", res.docs);
         const data: BookType[] = res.docs.map((doc) => ({
           id: doc.id,
-          ...doc.data(),
+          bookName: doc.data().bookName,
+          authorName: doc.data().authorName,
+          email: doc.data().email,
+          username: doc.data().authorName,
+          date: doc.data().date,
+          cover: doc.data().cover,
+          comment: doc.data().comment,
+          like: doc.data().like,
         }));
         console.log("docData:", data);
         setBookCollection(data);
-
         setIsLoading(false);
       } catch (error) {
         console.error("Error getting documents: ", error);
@@ -95,17 +95,12 @@ export const BookContextProvider = ({ children }: BookContextProviderProps) => {
   return (
     <BookContext.Provider
       value={{
-        // authorName,
-        // setAuthorName,
-        // bookName,
-        // setBookName,
         selectedAuthor,
         setSelectedAuthor,
         bookCollection,
         setBookCollection,
         isLoading,
         setIsLoading,
-        // deleteBook,
       }}
     >
       {children}

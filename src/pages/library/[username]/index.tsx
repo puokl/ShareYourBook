@@ -11,23 +11,16 @@ import {
   where,
 } from "firebase/firestore";
 import Layout from "@/components/Layout";
-import {
-  Box,
-  Flex,
-  Image,
-  Text,
-  VStack,
-  Spinner,
-  Divider,
-} from "@chakra-ui/react";
+import { Box, Flex, Image, Text, Spinner, Divider } from "@chakra-ui/react";
 import { BookLibraryType } from "@/types/libraryType";
 import { User as FirebaseUser } from "firebase/auth";
-import { CloseIcon } from "@chakra-ui/icons";
+
 import Router from "next/router";
+import { BookType } from "@/types/bookType";
 
 const index: React.FC = () => {
   const { user } = useContext(AuthContext);
-  const [userBooks, setUserBooks] = useState([{}]);
+  const [userBooks, setUserBooks] = useState<BookType[]>([]);
   const [libraryCollection, setLibraryCollection] = useState<BookLibraryType[]>(
     []
   );
@@ -64,7 +57,7 @@ const index: React.FC = () => {
         }
       }
       console.log("books", books);
-      setUserBooks(books);
+      setUserBooks(books as BookType[]);
 
       return books;
     } catch (error) {
@@ -74,7 +67,7 @@ const index: React.FC = () => {
   };
 
   //SECTION -
-  const deleteBook = (bookID) => {
+  const deleteBook = (bookID: string) => {
     console.log("userBooks", userBooks);
     const deleteBookRef = doc(database, "books", bookID);
     console.log("clicked");
@@ -92,25 +85,29 @@ const index: React.FC = () => {
 
   useEffect(() => {
     const fetchLibrary = async () => {
-      try {
-        const docRef = doc(collection(database, "library"), user?.email);
-        const docSnap = await getDoc(docRef);
-        console.log("user.displayName", user?.email);
+      if (user?.email) {
+        try {
+          const docRef = doc(collection(database, "library"), user?.email);
+          const docSnap = await getDoc(docRef);
+          console.log("user.displayName", user?.email);
 
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setLibraryCollection(data.libri);
-          console.log("libraryCollection", libraryCollection);
-        } else {
-          console.log("No such document!");
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setLibraryCollection(data.libri);
+            console.log("libraryCollection", libraryCollection);
+          } else {
+            console.log("No such document!");
+          }
+        } catch (error) {
+          console.log("Error getting document:", error);
         }
-      } catch (error) {
-        console.log("Error getting document:", error);
       }
     };
-    getUserBooks(user);
-    fetchLibrary();
-    setBookIsLoading(false);
+    if (user) {
+      getUserBooks(user);
+      fetchLibrary();
+      setBookIsLoading(false);
+    }
   }, [user]);
 
   return (
@@ -137,7 +134,7 @@ const index: React.FC = () => {
                       src={book.cover}
                       alt={book.bookName}
                     />
-                    <Flex direction="column" spacing={4} ml={10}>
+                    <Flex direction="column" ml={10}>
                       <Text>Book Name: {book.bookName}</Text>
                       <Text>Author: {book.authorName}</Text>
                     </Flex>
@@ -165,7 +162,7 @@ const index: React.FC = () => {
                         src={book.cover}
                         alt={book.bookName}
                       />
-                      <Flex direction="column" spacing={4} ml={10}>
+                      <Flex direction="column" ml={10}>
                         <Text>Title: {book.bookName}</Text>
                         <Text>Author: {book.authorName}</Text>
                         <Text
@@ -178,12 +175,6 @@ const index: React.FC = () => {
                           Delete
                         </Text>
                       </Flex>
-
-                      {/* <CloseIcon
-                        ml={300}
-                        onClick={() => deleteBook(book.id)}
-                        sx={{ cursor: "pointer" }}
-                      /> */}
                     </Flex>
                   ))}
 

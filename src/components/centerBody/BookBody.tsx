@@ -16,7 +16,6 @@ import {
 
 type BookBodyProps = {
   book: BookType;
-  // handleLikeClick: (item: any) => void;
   photoURL: string;
   showComments: boolean;
   setShowComments: (data: boolean) => void;

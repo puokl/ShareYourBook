@@ -1,10 +1,15 @@
+type DateType = {
+  nanoseconds: number;
+  seconds: number;
+};
+
 export type UserType = {
   email: string;
   photoURL: string;
   username: string;
-  lastLoginDate?: string;
-  firstLoginDate: string;
-  publishedBooks: string[];
+  lastLoginDate?: DateType;
+  firstLoginDate: DateType;
+  publishedBooks?: string[];
 };
 
 export type SignUpFormType = {

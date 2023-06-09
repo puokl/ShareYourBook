@@ -7,10 +7,9 @@ import { database } from "@/firebase/firebaseConfig";
 import { UserType } from "@/types/userType";
 import { capitalizeWords, formatFirebaseDate } from "@/utils/utils";
 import { AuthContext } from "@/context/AuthContext";
+import { User as FirebaseUser } from "firebase/auth";
 
-type RightProps = {};
-
-const Right: React.FC<RightProps> = () => {
+const Right: React.FC = () => {
   const auth = getAuth();
   const [userData, setUserData] = useState<UserType[]>([]);
   const { user } = useContext(AuthContext);
@@ -21,10 +20,10 @@ const Right: React.FC<RightProps> = () => {
         const usersCollectionRef = collection(database, "user");
         const querySnapshot = await getDocs(usersCollectionRef);
 
-        const fetchedUserData = [];
+        const fetchedUserData: UserType[] = [];
         querySnapshot.forEach((doc) => {
           const user = doc.data();
-          fetchedUserData.push(user);
+          fetchedUserData.push(user as UserType);
         });
 
         setUserData(fetchedUserData);

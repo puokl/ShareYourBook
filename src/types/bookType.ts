@@ -6,14 +6,14 @@ export type SignleCommentType = {
 };
 
 export type BookType = {
-  id?: string;
+  id: string;
   bookName: string;
   authorName: string;
   email: string;
   username: string;
   date: string;
   cover: string;
-  comment: SignleCommentType[];
+  comment?: SignleCommentType[];
   like: string[];
 };
 

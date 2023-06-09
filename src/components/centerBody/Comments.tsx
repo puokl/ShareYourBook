@@ -37,7 +37,7 @@ const Comment: React.FC<CommentsProps> = ({
     setIsEditing(true);
   };
 
-  const handleSaveEditClick = (bookId, commentIndex) => {
+  const handleSaveEditClick = (bookId: string, commentIndex: number) => {
     console.log("text edited");
     const commentDocRef = doc(database, "books", bookId);
     const book = bookCollection.find((item) => item.id === bookId);
@@ -114,6 +114,8 @@ const Comment: React.FC<CommentsProps> = ({
                       value={editedComment}
                       onChange={(e) => setEditedComment(e.target.value)}
                     />
+                    {console.log("bookId", bookId)}
+                    {console.log("commentIndex", commentIndex)}
                     <Text
                       as="button"
                       onClick={() => handleSaveEditClick(bookId, commentIndex)}

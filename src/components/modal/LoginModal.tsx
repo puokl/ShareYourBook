@@ -11,7 +11,6 @@ import {
   Image,
   Text,
   Flex,
-  Input,
 } from "@chakra-ui/react";
 import { CustomInput } from "@/utils/CustomComponent";
 
@@ -75,13 +74,17 @@ export function LoginModal() {
               <CustomInput
                 name="email"
                 placeholder="email"
-                onChange={(event) => handleInput(event)}
+                onChange={(event: React.FormEvent<EventTarget>) =>
+                  handleInput(event)
+                }
                 type="email"
               />
               <CustomInput
                 name="password"
                 placeholder="password"
-                onChange={(event) => handleInput(event)}
+                onChange={(event: React.FormEvent<EventTarget>) =>
+                  handleInput(event)
+                }
                 type="password"
               />
               {error && (

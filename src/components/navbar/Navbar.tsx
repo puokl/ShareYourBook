@@ -1,65 +1,46 @@
 import { AuthContext } from "@/context/AuthContext";
-import {
-  Box,
-  Button,
-  Flex,
-  HStack,
-  Stack,
-  Text,
-  Image,
-  Avatar,
-  Center,
-  Menu,
-  MenuButton,
-  MenuDivider,
-  MenuItem,
-  MenuList,
-  useColorMode,
-} from "@chakra-ui/react";
-import React, { useContext, useEffect, useState } from "react";
+import { Flex, Stack, Text, Image, useColorMode } from "@chakra-ui/react";
+import React, { useContext } from "react";
 import { LoginModal } from "../modal/LoginModal";
 import SignUp from "../modal/SignUpModal";
 import SearchInput from "./SearchInput";
-import { app, storage } from "../../firebase/firebaseConfig";
+import { storage } from "../../firebase/firebaseConfig";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import AvatarMenu from "./AvatarMenu";
-import { InfoOutlineIcon, MoonIcon, SunIcon, InfoIcon } from "@chakra-ui/icons";
-import { FaInfoCircle } from "react-icons/fa";
+import { InfoIcon } from "@chakra-ui/icons";
+
 import Link from "next/link";
 
-type NavbarProps = {};
-
-const Navbar: React.FC<NavbarProps> = () => {
-  const { logout, signUpWithGoogle, signUpForm, user } =
-    useContext(AuthContext);
-  const { colorMode, toggleColorMode } = useColorMode();
+const Navbar: React.FC = () => {
+  const { user } = useContext(AuthContext);
+  // const { colorMode, toggleColorMode } = useColorMode();
   //SECTION -
 
-  const { avatar, setAvatar } = useContext(AuthContext);
-  const handleSubmitAvatar = () => {
-    // const storageRef = ref(storage, data.name);
-    // to store it inside a images folder
-    const storageRef = ref(storage, `images/${avatar.name}`);
-    const uploadTask = uploadBytesResumable(storageRef, avatar);
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {
-        const progress =
-          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        console.log("Upload is " + progress + "% done");
-      },
-      (error) => {
-        console.log(error.message);
-      },
-      () => {
-        // Upload completed successfully, now we can get the download URL
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          setAvatar(downloadURL);
-          console.log("File available at", downloadURL);
-        });
-      }
-    );
-  };
+  // const { avatar, setAvatar } = useContext(AuthContext);
+  // const handleSubmitAvatar = () => {
+  //   // const storageRef = ref(storage, data.name);
+  //   // to store it inside a images folder
+  //   const storageRef = ref(storage, `images/${avatar.name}`);
+  //   const uploadTask = uploadBytesResumable(storageRef, avatar);
+  //   uploadTask.on(
+  //     "state_changed",
+  //     (snapshot) => {
+  //       const progress =
+  //         (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+  //       console.log("Upload is " + progress + "% done");
+  //     },
+  //     (error) => {
+  //       console.log(error.message);
+  //     },
+  //     () => {
+  //       // Upload completed successfully, now we can get the download URL
+  //       getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+  //         setAvatar(downloadURL);
+  //         console.log("File available at", downloadURL);
+  //       });
+  //     }
+  //   );
+  // };
 
   //SECTION -
 

@@ -25,9 +25,7 @@ import { UserType } from "../../types/userType";
 import { BookContext } from "@/context/BookContext";
 import { AuthContext } from "@/context/AuthContext";
 
-type CenterProps = {};
-
-const Center: React.FC<CenterProps> = () => {
+const Center: React.FC = () => {
   const [commentInputs, setCommentInputs] = useState({});
   const [userAvatar, setUserAvatar] = useState<UserType[]>([]);
   const { user, userIsLoading } = useContext(AuthContext);
@@ -76,10 +74,11 @@ const Center: React.FC<CenterProps> = () => {
     }
   };
 
-  const deleteComment = (bookId, commentIndex) => {
+  const deleteComment = (bookId: string, commentIndex: number) => {
     const bookDocRef = doc(database, "books", bookId);
     const currentComments =
-      bookCollection.find((item) => item.id === bookId)?.comment || [];
+      bookCollection.find((item: BookType) => item.id === bookId)?.comment ||
+      [];
     const updatedComments = [...currentComments];
     updatedComments.splice(commentIndex, 1);
     updateDoc(bookDocRef, {
@@ -93,7 +92,9 @@ const Center: React.FC<CenterProps> = () => {
       });
   };
 
-  const setCommentInput = (itemId, value) => {
+  const setCommentInput = (itemId: string, value: string) => {
+    console.log("itemId", itemId);
+    console.log("value", value);
     setCommentInputs({ ...commentInputs, [itemId]: value });
   };
 
@@ -129,7 +130,6 @@ const Center: React.FC<CenterProps> = () => {
     <>
       {user && (
         <Flex direction="column" w="100%" bg="gray.200">
-          {console.log("commentInputs", commentInputs)}
           <Text
             fontSize="2xl"
             textAlign="center"

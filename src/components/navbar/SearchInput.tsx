@@ -25,17 +25,30 @@ type SearchInputProps = {
   user?: User | null;
 };
 
+type FetchedDataType = {
+  alternate_names: string[];
+  birth_date: string;
+  death_date: string;
+  key: string;
+  name: string;
+  top_subjects: string[];
+  top_work: string;
+  type: string;
+  work_count: number;
+  _version_: number;
+};
+
 const SearchInput: React.FC<SearchInputProps> = ({}) => {
   const router = useRouter();
   const [inputValue, setInputValue] = useState<string>("");
-  const [fetchedData, setFetchedData] = useState([]);
-  const { setAuthorName, setSelectedAuthor, selectedAuthor } =
-    useContext(BookContext);
+  const [fetchedData, setFetchedData] = useState<FetchedDataType[]>([]);
+  const { setSelectedAuthor, selectedAuthor } = useContext(BookContext);
   const [isModalOpen, setIsModalOpen] = useState(true);
   const { user } = useContext(AuthContext);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const ref = useRef<RefObject<HTMLElement>>();
+
+  const ref = useRef<HTMLDivElement>(null);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) =>
     setInputValue(event.target.value);
@@ -49,7 +62,7 @@ const SearchInput: React.FC<SearchInputProps> = ({}) => {
 
         // console.log("fetchedData", response.data.docs);
         setFetchedData(response.data.docs);
-        // setAuthorName(response.data.docs);
+
         console.log("fetchedData", response.data.docs);
       } catch (error) {
         console.log(error);
@@ -64,8 +77,6 @@ const SearchInput: React.FC<SearchInputProps> = ({}) => {
       setIsModalOpen(false);
     },
   });
-
-  const handleClick = () => {};
 
   // flexgrow={1} means take up the remaining width of its parent container
   return (
@@ -99,8 +110,7 @@ const SearchInput: React.FC<SearchInputProps> = ({}) => {
             />
           </InputGroup>
         )}
-        {/* <button onClick={() => setIsModalOpen(true)}>Open Modal</button>
-        {fetchedData.length > 0: setIsModalOpen(true) ? setIsModalOpen(false)} */}
+
         {fetchedData.length > 0 && isModalOpen && (
           <Box
             ref={ref}
