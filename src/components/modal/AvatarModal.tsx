@@ -40,18 +40,22 @@ const AvatarModal: React.FC = () => {
 
   const handleSubmitAvatar = () => {
     console.log("auth.currentUser", auth.currentUser);
-    if (avatar && auth.currentUser) {
+    const tempUser = auth.currentUser;
+    if (avatar && tempUser) {
       const storageRef = ref(storage, `images/${avatar.name}`);
       uploadBytes(storageRef, avatar).then((snapshot) => {
         getDownloadURL(snapshot.ref).then((downloadURL) => {
-          updateProfile(auth.currentUser, {
+          updateProfile(tempUser, {
             photoURL: downloadURL,
           })
             .then(() => {
-              const userDocRef = doc(database, "user", auth.currentUser.email);
-              updateDoc(userDocRef, { photoURL: downloadURL });
-              Router.reload();
+              const tempEmail = tempUser.email;
+              if (tempEmail) {
+                const userDocRef = doc(database, "user", tempEmail);
+                updateDoc(userDocRef, { photoURL: downloadURL });
+              }
             })
+            .then(() => Router.reload())
             .catch((error) => console.log(error));
         });
       });

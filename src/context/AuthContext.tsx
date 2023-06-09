@@ -306,6 +306,7 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
   useEffect(() => {
     checkIfUserIsLoggedIn();
     console.log("user in useEffect on AuthContext", user);
+    console.log("auth", auth);
     console.log("auth.currentUser", auth.currentUser);
   }, []);
 
