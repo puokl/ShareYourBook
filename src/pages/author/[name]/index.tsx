@@ -55,8 +55,10 @@ const index: React.FC = () => {
     })
       // adding book id to user collection to manage user page
       .then((docRef) => {
-        const bookdocRef = doc(database, "user", user?.email);
-        updateDoc(bookdocRef, { publishedBooks: arrayUnion(docRef.id) });
+        if (user?.email) {
+          const bookdocRef = doc(database, "user", user.email);
+          updateDoc(bookdocRef, { publishedBooks: arrayUnion(docRef.id) });
+        }
       })
       .then((res) => console.log("res from publishedbook union", res))
       .catch((err) => {
@@ -68,42 +70,45 @@ const index: React.FC = () => {
   const libraryRef = collection(database, "library");
 
   const handleSubmitLibrary = (item: AuthorBookType) => {
-    const libraryDocRef = doc(database, "library", user?.email);
-
-    getDoc(libraryDocRef).then((res) => {
-      if (res.exists()) {
-        updateDoc(libraryDocRef, {
-          libri: arrayUnion({
-            bookName: item.title,
-            date: new Date().toISOString(),
-            username: user?.displayName,
-            cover: `https://covers.openlibrary.org/b/id/${item.covers}-M.jpg`,
-            authorName: selectedAuthor.name,
-            email: user?.email,
-          }),
-        }).catch((err) => {
-          alert(err.message);
-          console.log("err.message", err.message);
-        });
-      } else {
-        setDoc(doc(database, "library", user?.email), {
-          initialized: true,
-          libri: [
-            {
+    if (user?.email) {
+      const libraryDocRef = doc(database, "library", user?.email);
+      getDoc(libraryDocRef).then((res) => {
+        if (res.exists()) {
+          updateDoc(libraryDocRef, {
+            libri: arrayUnion({
               bookName: item.title,
               date: new Date().toISOString(),
               username: user?.displayName,
               cover: `https://covers.openlibrary.org/b/id/${item.covers}-M.jpg`,
               authorName: selectedAuthor.name,
               email: user?.email,
-            },
-          ],
-        }).catch((err) => {
-          alert(err.message);
-          console.log("err.message", err.message);
-        });
-      }
-    });
+            }),
+          }).catch((err) => {
+            alert(err.message);
+            console.log("err.message", err.message);
+          });
+        } else {
+          if (user?.email) {
+            setDoc(doc(database, "library", user?.email), {
+              initialized: true,
+              libri: [
+                {
+                  bookName: item.title,
+                  date: new Date().toISOString(),
+                  username: user?.displayName,
+                  cover: `https://covers.openlibrary.org/b/id/${item.covers}-M.jpg`,
+                  authorName: selectedAuthor.name,
+                  email: user?.email,
+                },
+              ],
+            }).catch((err) => {
+              alert(err.message);
+              console.log("err.message", err.message);
+            });
+          }
+        }
+      });
+    }
   };
 
   const handleItemClickLibrary = (item: AuthorBookType) => {
