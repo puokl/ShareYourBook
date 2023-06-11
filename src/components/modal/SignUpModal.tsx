@@ -1,6 +1,5 @@
 import { useContext } from "react";
 import {
-  Input,
   Button,
   Modal,
   useDisclosure,
@@ -16,7 +15,7 @@ import { AuthContext } from "@/context/AuthContext";
 import { CustomInput } from "@/utils/CustomComponent";
 
 const SignUpModal: React.FC = () => {
-  const { signUpForm, setSignUpForm, modalRegister, error } =
+  const { signUpForm, setSignUpForm, register, error } =
     useContext(AuthContext);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const auth = getAuth(app);
@@ -78,7 +77,7 @@ const SignUpModal: React.FC = () => {
               </Text>
             )}
             <br />
-            <Button onClick={modalRegister}>Sign Up</Button>
+            <Button onClick={register}>Sign Up</Button>
             <br />
           </Flex>
         </ModalContent>

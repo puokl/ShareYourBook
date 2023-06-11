@@ -6,8 +6,6 @@ import {
   onSnapshot,
   query,
   orderBy,
-  deleteDoc,
-  doc,
 } from "firebase/firestore";
 import { ReactNode, createContext, useEffect, useState } from "react";
 
@@ -46,25 +44,12 @@ export const BookContextProvider = ({ children }: BookContextProviderProps) => {
 
   const booksCollectionRef = collection(database, "books");
 
-  // const deleteBook = () => {
-  //   const deleteBookRef = doc(database, "books", book.id);
-  //   console.log("clicked");
-  //   return deleteDoc(deleteBookRef)
-  //     .then(() => {
-  //       console.log("doc deleted");
-  //     })
-  //     .catch((err) => {
-  //       console.log("err", err);
-  //     });
-  // };
-
   useEffect(() => {
     const fetchBookData = async () => {
       try {
         const res = await getDocs(
           query(booksCollectionRef, orderBy("date", "desc"))
         );
-        console.log("res.docs", res.docs);
         const data: BookType[] = res.docs.map((doc) => ({
           id: doc.id,
           bookName: doc.data().bookName,
@@ -76,11 +61,10 @@ export const BookContextProvider = ({ children }: BookContextProviderProps) => {
           comment: doc.data().comment,
           like: doc.data().like,
         }));
-        console.log("docData:", data);
         setBookCollection(data);
         setIsLoading(false);
       } catch (error) {
-        console.error("Error getting documents: ", error);
+        console.error("Error BookContext useEffect: ", error);
         setIsLoading(false);
       }
     };

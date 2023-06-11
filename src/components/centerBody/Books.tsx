@@ -43,13 +43,10 @@ const Books: React.FC<BookProps> = ({
       <BookBody
         book={book}
         photoURL={photoURL}
-        setShowComments={setShowComments}
-        showComments
         handleShowComments={handleShowComments}
       />
 
       {/* COMMENTS SECTION */}
-      {/* {console.log("showComments", showComments)} */}
       {showComments && (
         <Flex direction="column">
           {book.comment &&
@@ -99,13 +96,6 @@ const Books: React.FC<BookProps> = ({
           value={commentInputs[book.id] || ""}
           onChange={(e) => setCommentInput(book.id, e.target.value)}
         />
-        {/* <Text
-          as="button"
-          onClick={() => addComment(book.id)}
-          h={7}
-          fontSize="sm"
-          fontWeight="bold"
-        ></Text> */}
         <Button onClick={() => addComment(book.id)} h={7} bg="gray.300">
           Add Comment
         </Button>

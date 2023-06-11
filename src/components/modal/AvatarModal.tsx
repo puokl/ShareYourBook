@@ -5,20 +5,13 @@ import {
   ModalContent,
   ModalHeader,
   ModalCloseButton,
-  ModalBody,
   ModalFooter,
   useDisclosure,
   MenuItem,
 } from "@chakra-ui/react";
-import React, { useContext, useState } from "react";
-import { app, database, storage } from "../../firebase/firebaseConfig";
-import {
-  ref,
-  uploadBytesResumable,
-  getDownloadURL,
-  uploadBytes,
-} from "firebase/storage";
-import { AuthContext } from "@/context/AuthContext";
+import { useState } from "react";
+import { database, storage } from "../../firebase/firebaseConfig";
+import { ref, getDownloadURL, uploadBytes } from "firebase/storage";
 import { getAuth, updateProfile } from "firebase/auth";
 import { doc, updateDoc } from "firebase/firestore";
 import Router from "next/router";
@@ -34,7 +27,6 @@ type AvatarUploadedType = {
 
 const AvatarModal: React.FC = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-
   const [avatar, setAvatar] = useState<File | null>(null);
   const auth = getAuth();
 

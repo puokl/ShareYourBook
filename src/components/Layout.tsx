@@ -19,7 +19,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <Box bg="gray.200" pb={3}>
         <Flex direction="column">
           <Navbar />
-          <Box flex="1" pt="8">
+          <Box flex="1" pt="6">
             <>{children}</>
           </Box>
         </Flex>

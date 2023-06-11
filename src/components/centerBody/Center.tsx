@@ -1,14 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import {
-  Flex,
-  Text,
-  useToast,
-  Spinner,
-  Box,
-  textDecoration,
-  Divider,
-  Stack,
-} from "@chakra-ui/react";
+import { Flex, Text, useToast, Spinner, Box, Divider } from "@chakra-ui/react";
 import {
   arrayUnion,
   collection,
@@ -28,7 +19,7 @@ import { AuthContext } from "@/context/AuthContext";
 const Center: React.FC = () => {
   const [commentInputs, setCommentInputs] = useState({});
   const [userAvatar, setUserAvatar] = useState<UserType[]>([]);
-  const { user, userIsLoading } = useContext(AuthContext);
+  const { user, userIsLoading, checkUserIsLoading } = useContext(AuthContext);
   const { bookCollection, isLoading } = useContext(BookContext);
   const toast = useToast();
   const auth = getAuth();
@@ -93,8 +84,6 @@ const Center: React.FC = () => {
   };
 
   const setCommentInput = (itemId: string, value: string) => {
-    console.log("itemId", itemId);
-    console.log("value", value);
     setCommentInputs({ ...commentInputs, [itemId]: value });
   };
 
@@ -111,9 +100,7 @@ const Center: React.FC = () => {
       try {
         const snapshot = await getDocs(usersCollectionRef);
         const userData = snapshot.docs.map((doc) => doc.data() as UserType);
-        console.log("userData", userData);
         setUserAvatar(userData);
-        console.log("userAvatar", userAvatar);
       } catch (error) {
         console.error("Error getting documents: ", error);
       }
@@ -193,7 +180,7 @@ const Center: React.FC = () => {
           )}
         </Flex>
       )}
-      {userIsLoading && !user && (
+      {userIsLoading && checkUserIsLoading && !user && (
         <Flex>
           <Text as="b" mt={250}>
             Please login in to join our community and discover what other people

@@ -20,17 +20,17 @@ import { SignUpFormType } from "@/types/userType";
 interface AuthContextProps {
   signUpWithGoogle: () => void;
   signUpWithGithub: () => void;
-  modalRegister: () => void;
+  register: () => void;
   signUpForm: SignUpFormType;
   setSignUpForm: React.Dispatch<React.SetStateAction<SignUpFormType>>;
   logout: () => void;
   login: () => void;
   error: any;
   setError: React.Dispatch<React.SetStateAction<string>>;
-
   user: User | null;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   userIsLoading: boolean;
+  checkUserIsLoading: boolean;
 }
 
 interface AuthContextProviderProps {
@@ -43,8 +43,8 @@ export const AuthContext = createContext<AuthContextProps>(
 
 export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
   const [error, setError] = useState("");
-  // const [avatar, setAvatar] = useState<AvatarUploadedType | null>(null);
   const [userIsLoading, setUserIsLoading] = useState(true);
+  const [checkUserIsLoading, setCheckUserIsLoading] = useState(true);
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [signUpForm, setSignUpForm] = useState<SignUpFormType>({
     name: "",
@@ -58,7 +58,7 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
   const googleProvider = new GoogleAuthProvider();
   const githubProvider = new GithubAuthProvider();
 
-  const modalRegister = () => {
+  const register = () => {
     if (!signUpForm.name) {
       setError("Please add a username");
       return;
@@ -75,12 +75,9 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
       })
       .then(() => {
         const user = auth.currentUser;
-        console.log("user on register", user);
-
         return setDoc(doc(database, "user", signUpForm.email), {
           email: user?.email,
           photoURL: "",
-          // photoURL: "./images/avatar.jpeg",
           username: signUpForm.name,
           firstLoginDate: new Date(),
           publishedBooks: [],
@@ -91,48 +88,9 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
       })
       .catch((error) => {
         setError(error.message);
-        console.log("Error on modalRegister", error.message);
+        console.log("Error on register", error.message);
       });
   };
-
-  // const modalRegister = async () => {
-  //   if (!signUpForm.name) {
-  //     setError("Please add a username");
-  //     return;
-  //   }
-  //   if (signUpForm.password !== signUpForm.confirmPassword) {
-  //     setError("Passwords do not match");
-  //     return;
-  //   }
-
-  //   try {
-  //     await createUserWithEmailAndPassword(
-  //       auth,
-  //       signUpForm.email,
-  //       signUpForm.password
-  //     );
-  //     await updateProfile(auth.currentUser as User, {
-  //       displayName: signUpForm.name,
-  //     });
-
-  //     const user = auth.currentUser;
-  //     console.log("user on register", user);
-
-  //     await setDoc(doc(database, "user", signUpForm.email), {
-  //       email: user?.email,
-  //       photoURL: "",
-  //       // photoURL: "./images/avatar.jpeg",
-  //       username: signUpForm.name,
-  //       firstLoginDate: new Date(),
-  //       publishedBooks: [],
-  //     });
-
-  //     router.push("/");
-  //   } catch (error) {
-  //     setError(error.message);
-  //     console.log("Error on modalRegister", error.message);
-  //   }
-  // };
 
   const login = () => {
     signInWithEmailAndPassword(
@@ -164,6 +122,7 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
     });
   };
 
+  //TODO - async/await
   // const login = async () => {
   //   try {
   //     const res = await signInWithEmailAndPassword(
@@ -277,25 +236,11 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
       );
   };
 
-  const checkIfUserIsLoggedIn = () => {
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        const uid = user.uid;
-        console.log("user is logged in", user);
-        setUser(user);
-      } else {
-        console.log("user is not logged in");
-        setUser(null);
-      }
-    });
-  };
-
   const logout = () => {
     signOut(auth)
       .then(() => {
         setUser(null);
         setUserIsLoading(true);
-        console.log("logout succesfully");
         router.push("/");
       })
       .catch((error) => {
@@ -303,11 +248,20 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
       });
   };
 
+  const checkIfUserIsLoggedIn = () => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUser(user);
+        setCheckUserIsLoading(false);
+      } else {
+        console.log("user is not logged in");
+        setUser(null);
+      }
+    });
+  };
+
   useEffect(() => {
     checkIfUserIsLoggedIn();
-    console.log("user in useEffect on AuthContext", user);
-    console.log("auth", auth);
-    console.log("auth.currentUser", auth.currentUser);
   }, []);
 
   return (
@@ -319,12 +273,13 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
         signUpWithGithub,
         signUpForm,
         setSignUpForm,
-        modalRegister,
+        register,
         error,
         setError,
         user,
         setUser,
         userIsLoading,
+        checkUserIsLoading,
       }}
     >
       {children}

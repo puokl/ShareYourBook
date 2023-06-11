@@ -1,48 +1,15 @@
 import { AuthContext } from "@/context/AuthContext";
-import { Flex, Stack, Text, Image, useColorMode } from "@chakra-ui/react";
+import { Flex, Stack, Text, Image } from "@chakra-ui/react";
 import React, { useContext } from "react";
 import { LoginModal } from "../modal/LoginModal";
 import SignUp from "../modal/SignUpModal";
 import SearchInput from "./SearchInput";
-import { storage } from "../../firebase/firebaseConfig";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import AvatarMenu from "./AvatarMenu";
-import { InfoIcon } from "@chakra-ui/icons";
-
+import { InfoIcon, InfoOutlineIcon } from "@chakra-ui/icons";
 import Link from "next/link";
 
 const Navbar: React.FC = () => {
   const { user } = useContext(AuthContext);
-  // const { colorMode, toggleColorMode } = useColorMode();
-  //SECTION -
-
-  // const { avatar, setAvatar } = useContext(AuthContext);
-  // const handleSubmitAvatar = () => {
-  //   // const storageRef = ref(storage, data.name);
-  //   // to store it inside a images folder
-  //   const storageRef = ref(storage, `images/${avatar.name}`);
-  //   const uploadTask = uploadBytesResumable(storageRef, avatar);
-  //   uploadTask.on(
-  //     "state_changed",
-  //     (snapshot) => {
-  //       const progress =
-  //         (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-  //       console.log("Upload is " + progress + "% done");
-  //     },
-  //     (error) => {
-  //       console.log(error.message);
-  //     },
-  //     () => {
-  //       // Upload completed successfully, now we can get the download URL
-  //       getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-  //         setAvatar(downloadURL);
-  //         console.log("File available at", downloadURL);
-  //       });
-  //     }
-  //   );
-  // };
-
-  //SECTION -
 
   return (
     <Flex
@@ -51,13 +18,14 @@ const Navbar: React.FC = () => {
       // justifyContent="space-between"
       justifyContent={{ md: "space-between" }}
       display="flex"
-      minHeight="55px"
-      pr={5}
-      pl={5}
+      maxHeight="50px"
+      pr={7}
+      pl={7}
+      alignItems="center"
     >
       <Flex
         align="center"
-        width={{ base: "40px", md: "auto" }}
+        width={{ base: "60px", md: "auto" }}
         mr={{ base: 0, md: 2 }}
       >
         <Link href="/">
@@ -69,16 +37,13 @@ const Navbar: React.FC = () => {
           ml={5}
           as="b"
           color="white"
-          // chakra is mobile first, base none means when mobile size not show
         >
           <Link href="/"> Share Your Book</Link>
         </Text>
       </Flex>
-      <Flex minWidth="600px">
+      <Flex minWidth={{ base: "100px", md: "600px" }}>
         <SearchInput />
       </Flex>
-      {/* <Flex>Here goes the searchbar</Flex> */}
-
       <Stack
         flex={{ base: 1, md: 0 }}
         justify={"flex-end"}
@@ -86,20 +51,14 @@ const Navbar: React.FC = () => {
         spacing={6}
       >
         <Link href="/info">
-          {/* <InfoOutlineIcon mt={3} /> */}
-          <InfoIcon mt={3} />
+          <InfoIcon mt={3} color="gray.200" />
         </Link>
-        {/* <Button onClick={toggleColorMode}>
-          {colorMode === "light" ? <MoonIcon /> : <SunIcon />}
-        </Button> */}
         {!user && (
           <>
             <LoginModal />
-
             <SignUp />
           </>
         )}
-
         {user && <AvatarMenu />}
       </Stack>
     </Flex>

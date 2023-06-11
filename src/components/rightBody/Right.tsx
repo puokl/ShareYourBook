@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 import { Avatar, Box, Flex, Text } from "@chakra-ui/react";
 import { getAuth } from "firebase/auth";
 import { useEffect, useState } from "react";
@@ -7,7 +7,6 @@ import { database } from "@/firebase/firebaseConfig";
 import { UserType } from "@/types/userType";
 import { capitalizeWords, formatFirebaseDate } from "@/utils/utils";
 import { AuthContext } from "@/context/AuthContext";
-import { User as FirebaseUser } from "firebase/auth";
 
 const Right: React.FC = () => {
   const auth = getAuth();
@@ -27,9 +26,8 @@ const Right: React.FC = () => {
         });
 
         setUserData(fetchedUserData);
-        console.log("userData", userData);
       } catch (error) {
-        console.log("Error fetching user data:", error);
+        console.log("Error Right useEffect:", error);
       }
     };
     fetchUserData();

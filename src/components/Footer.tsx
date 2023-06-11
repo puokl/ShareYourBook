@@ -1,4 +1,4 @@
-import { Flex, HStack, Text } from "@chakra-ui/react";
+import { Flex, Text } from "@chakra-ui/react";
 import Link from "next/link";
 import React from "react";
 import { AiFillGithub } from "react-icons/ai";
@@ -15,6 +15,7 @@ const Footer: React.FC<FooterProps> = () => {
         minHeight="80px"
         bg="blue.700"
         zIndex="2ß"
+        color="white"
       >
         <Text>
           This app was build using the API from{" "}
@@ -22,10 +23,9 @@ const Footer: React.FC<FooterProps> = () => {
             <Text as="b">Open Library</Text>
           </Link>
         </Text>
-        <Flex direction="row">
-          <Text>A project by:</Text>
-          <AiFillGithub />
-          <Link href="https://github.com">Phuoc</Link>
+        <Flex direction="row" alignItems="center">
+          <Text mr={2}>A project by: </Text> <AiFillGithub />
+          <Link href="https://github.com/puokl">Phuoc</Link>
         </Flex>
       </Flex>
     </>

@@ -5,8 +5,6 @@ import {
   Button,
   Flex,
   Image,
-  List,
-  ListItem,
   Text,
   VStack,
   useToast,
@@ -36,11 +34,8 @@ const index: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [authorBook, setAuthorBook] = useState<AuthorBookType[]>([]);
   const { name, key } = selectedAuthor;
-
   const toast = useToast();
-  console.log("selectedAuthor", selectedAuthor);
 
-  //REVIEW - Firestore
   const bookRef = collection(database, "books");
 
   const handleSubmitBook = (item: AuthorBookType) => {
@@ -60,10 +55,9 @@ const index: React.FC = () => {
           updateDoc(bookdocRef, { publishedBooks: arrayUnion(docRef.id) });
         }
       })
-      .then((res) => console.log("res from publishedbook union", res))
       .catch((err) => {
         alert(err.message);
-        console.log("err.message", err.message);
+        console.log("handleSubmitBook error", err.message);
       });
   };
 
@@ -85,7 +79,7 @@ const index: React.FC = () => {
             }),
           }).catch((err) => {
             alert(err.message);
-            console.log("err.message", err.message);
+            console.log("handleSubmitLibrary error", err.message);
           });
         } else {
           if (user?.email) {
@@ -103,7 +97,7 @@ const index: React.FC = () => {
               ],
             }).catch((err) => {
               alert(err.message);
-              console.log("err.message", err.message);
+              console.log("handleSubmitLibrary error", err.message);
             });
           }
         }
@@ -168,14 +162,10 @@ const index: React.FC = () => {
         const response = await axios.get(
           `https://openlibrary.org/authors/${key}/works.json`
         );
-
-        // console.log("fetchedData", response);
-        console.log("fetchedData", response.data.entries);
         setAuthorBook(response.data.entries);
         setIsLoading(false);
-        console.log("authorBook", authorBook);
       } catch (error) {
-        console.log(error);
+        console.log("author_name_index error:", error);
       }
     }
     fetchData();

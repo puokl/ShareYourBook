@@ -61,18 +61,9 @@ const Comment: React.FC<CommentsProps> = ({
       });
   };
 
-  // const editComment = (itemId, commentIndex) => {
-  //   // set(ref(database, "books/" + itemId),{
-  //   //     ...prev, comment[commentIndex].text: "hello"
-  //   // })
-  // };
   const handleCancelClick = () => {
     setIsEditing(false);
   };
-
-  // const isEditable = (a, b) => {
-  //   return (a = b);
-  // };
 
   return (
     <Flex
@@ -104,7 +95,6 @@ const Comment: React.FC<CommentsProps> = ({
             <Text fontSize="10px" as="samp" ml="10px" mt="2px">
               {formattedDate(comment.date)}
             </Text>
-            {/* <Flex> */}
             {/* //FIXME - */}
             {user?.displayName === comment.username && (
               <Box ml={10}>
@@ -163,7 +153,6 @@ const Comment: React.FC<CommentsProps> = ({
                 )}
               </Box>
             )}
-            {/* </Flex> */}
           </Flex>
         </Flex>
         <Flex>

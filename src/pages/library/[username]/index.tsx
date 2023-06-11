@@ -14,7 +14,6 @@ import Layout from "@/components/Layout";
 import { Box, Flex, Image, Text, Spinner, Divider } from "@chakra-ui/react";
 import { BookLibraryType } from "@/types/libraryType";
 import { User as FirebaseUser } from "firebase/auth";
-
 import Router from "next/router";
 import { BookType } from "@/types/bookType";
 
@@ -28,8 +27,6 @@ const index: React.FC = () => {
 
   const booksCollectionRef = collection(database, "books");
 
-  //SECTION -
-
   const getUserBooks = async (user: FirebaseUser) => {
     try {
       const usersCollectionRef = collection(database, "user");
@@ -41,10 +38,7 @@ const index: React.FC = () => {
         console.log(`No user found with email: ${user.email}`);
         return [];
       }
-
-      // console.log("userQuerySnapshot", userQuerySnapshot);
       const userData = userQuerySnapshot.docs[0].data();
-      // console.log("userData", userData);
       const publishedBooks = userData.publishedBooks || [];
       const books = [];
 
@@ -56,28 +50,23 @@ const index: React.FC = () => {
           books.push({ id: bookDocSnapshot.id, ...bookData });
         }
       }
-      console.log("books", books);
       setUserBooks(books as BookType[]);
-
       return books;
     } catch (error) {
-      console.error("Error retrieving user books: ", error);
+      console.error("Error getUserBooks: ", error);
       return [];
     }
   };
 
-  //SECTION -
   const deleteBook = (bookID: string) => {
-    console.log("userBooks", userBooks);
     const deleteBookRef = doc(database, "books", bookID);
-    console.log("clicked");
     return deleteDoc(deleteBookRef)
       .then(() => {
         console.log("doc deleted");
         Router.reload();
       })
       .catch((err) => {
-        console.log("err", err);
+        console.log("deleteBook error", err);
       });
   };
 
@@ -89,17 +78,15 @@ const index: React.FC = () => {
         try {
           const docRef = doc(collection(database, "library"), user?.email);
           const docSnap = await getDoc(docRef);
-          console.log("user.displayName", user?.email);
 
           if (docSnap.exists()) {
             const data = docSnap.data();
             setLibraryCollection(data.libri);
-            console.log("libraryCollection", libraryCollection);
           } else {
             console.log("No such document!");
           }
         } catch (error) {
-          console.log("Error getting document:", error);
+          console.log("Error library_username_index: ", error);
         }
       }
     };
@@ -135,8 +122,12 @@ const index: React.FC = () => {
                       alt={book.bookName}
                     />
                     <Flex direction="column" ml={10}>
-                      <Text>Book Name: {book.bookName}</Text>
-                      <Text>Author: {book.authorName}</Text>
+                      <Text>
+                        Title: <Text as="b">{book.bookName}</Text>
+                      </Text>
+                      <Text>
+                        Author: <Text as="b">{book.authorName}</Text>
+                      </Text>
                     </Flex>
                   </Flex>
                 ))}

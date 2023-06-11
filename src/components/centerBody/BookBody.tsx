@@ -1,7 +1,6 @@
 import { useContext } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { BookContext } from "@/context/BookContext";
-import { CloseIcon } from "@chakra-ui/icons";
 import { Flex, HStack, Text, Image, Avatar } from "@chakra-ui/react";
 import { arrayUnion, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { database } from "@/firebase/firebaseConfig";
@@ -17,21 +16,15 @@ import {
 type BookBodyProps = {
   book: BookType;
   photoURL: string;
-  showComments: boolean;
-  setShowComments: (data: boolean) => void;
   handleShowComments: () => void;
 };
 
 const BookBody: React.FC<BookBodyProps> = ({
   book,
   photoURL,
-  setShowComments,
-  showComments,
   handleShowComments,
 }) => {
-  const { bookCollection, isLoading } = useContext(BookContext);
   const { user } = useContext(AuthContext);
-  const bookId = book.id;
 
   const deleteBook = () => {
     if (book.id) {
@@ -42,24 +35,21 @@ const BookBody: React.FC<BookBodyProps> = ({
           console.log("doc deleted");
         })
         .catch((err) => {
-          console.log("err", err);
+          console.log("deleteBook error", err.message);
         });
     }
   };
 
-  //NOTE -
   const handleLikeClick = (item: BookType) => {
     if (item.id) {
       const booksDocRef = doc(database, "books", item.id);
 
       updateDoc(booksDocRef, {
         like: arrayUnion(user?.email),
-      })
-        .then(() => console.log("res"))
-        .catch((err) => {
-          alert(err.message);
-          console.log("err.message", err.message);
-        });
+      }).catch((err) => {
+        alert(err.message);
+        console.log("err.message", err.message);
+      });
     } else {
       console.log("handleLikeClick error", "cannot find the book");
     }
@@ -81,14 +71,6 @@ const BookBody: React.FC<BookBodyProps> = ({
             <Text fontSize="xs" as="samp">
               {formattedDate(book.date)}
             </Text>
-
-            {/* {user?.email === book.email && (
-              <CloseIcon
-                ml={300}
-                onClick={deleteBook}
-                sx={{ cursor: "pointer" }}
-              />
-            )} */}
           </Flex>
           <Flex mb={4}>
             <Image

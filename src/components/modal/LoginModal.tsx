@@ -97,7 +97,7 @@ export function LoginModal() {
             </Flex>
           </main>
 
-          <Flex fontSize="9pt" justifyContent="center">
+          {/* <Flex fontSize="9pt" justifyContent="center">
             <Text mr={1}>New here?</Text>
 
             <Text
@@ -108,7 +108,7 @@ export function LoginModal() {
             >
               SIGN UP
             </Text>
-          </Flex>
+          </Flex> */}
         </ModalContent>
       </Modal>
     </>

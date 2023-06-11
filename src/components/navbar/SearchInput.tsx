@@ -1,16 +1,12 @@
 import { SearchIcon } from "@chakra-ui/icons";
 import {
   Box,
-  Button,
-  Flex,
   Input,
   InputGroup,
   InputLeftElement,
   List,
   ListItem,
-  Stack,
   VStack,
-  useDisclosure,
   useOutsideClick,
 } from "@chakra-ui/react";
 import React, { useContext, useEffect, useRef, useState } from "react";
@@ -18,7 +14,6 @@ import { User } from "firebase/auth";
 import axios from "axios";
 import { BookContext } from "@/context/BookContext";
 import { useRouter } from "next/router";
-import Layout from "../Layout";
 import { AuthContext } from "@/context/AuthContext";
 
 type SearchInputProps = {
@@ -45,31 +40,10 @@ const SearchInput: React.FC<SearchInputProps> = ({}) => {
   const { setSelectedAuthor, selectedAuthor } = useContext(BookContext);
   const [isModalOpen, setIsModalOpen] = useState(true);
   const { user } = useContext(AuthContext);
-
-  const { isOpen, onOpen, onClose } = useDisclosure();
-
   const ref = useRef<HTMLDivElement>(null);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) =>
     setInputValue(event.target.value);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const response = await axios.get(
-          `https://openlibrary.org/search/authors.json?q=${inputValue}`
-        );
-
-        // console.log("fetchedData", response.data.docs);
-        setFetchedData(response.data.docs);
-
-        console.log("fetchedData", response.data.docs);
-      } catch (error) {
-        console.log(error);
-      }
-    }
-    fetchData();
-  }, [inputValue]);
 
   useOutsideClick({
     ref: ref,
@@ -78,10 +52,23 @@ const SearchInput: React.FC<SearchInputProps> = ({}) => {
     },
   });
 
-  // flexgrow={1} means take up the remaining width of its parent container
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await axios.get(
+          `https://openlibrary.org/search/authors.json?q=${inputValue}`
+        );
+        setFetchedData(response.data.docs);
+      } catch (error) {
+        console.log("SearchInput useEffect error", error);
+      }
+    }
+    fetchData();
+  }, [inputValue]);
+
   return (
     <VStack flexGrow={1} width="auto" mr={2} align="center">
-      <VStack width="600px">
+      <VStack width={{ base: "300px", md: "600px" }}>
         {user && (
           <InputGroup>
             <InputLeftElement
@@ -114,15 +101,16 @@ const SearchInput: React.FC<SearchInputProps> = ({}) => {
         {fetchedData.length > 0 && isModalOpen && (
           <Box
             ref={ref}
-            mt={2}
+            ml={2}
             bg="white"
-            p={2}
+            pl={2}
             borderRadius="md"
             boxShadow="md"
             maxHeight="200px"
             overflowY="auto"
-            width="600px"
+            width="100%"
             zIndex="1"
+            position="relative"
           >
             <List width="auto">
               {fetchedData.map((item, index) => (
@@ -135,7 +123,6 @@ const SearchInput: React.FC<SearchInputProps> = ({}) => {
                   onClick={() => {
                     router.push(`/author/${item.name}`);
                     setSelectedAuthor(item);
-                    console.log("selected item", selectedAuthor);
                   }}
                 >
                   {item.name}
@@ -145,8 +132,6 @@ const SearchInput: React.FC<SearchInputProps> = ({}) => {
           </Box>
         )}
       </VStack>
-
-      {/* <Button onClick={() => router.push("/hello")}></Button> */}
     </VStack>
   );
 };

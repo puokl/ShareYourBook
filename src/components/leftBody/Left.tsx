@@ -1,20 +1,9 @@
 import { useContext, useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
-import { database } from "@/firebase/firebaseConfig";
 import { BookContext } from "@/context/BookContext";
-import {
-  UnorderedList,
-  ListItem,
-  Box,
-  Text,
-  VStack,
-  Flex,
-  Divider,
-} from "@chakra-ui/react";
+import { UnorderedList, ListItem, Box, Text, Flex } from "@chakra-ui/react";
 import { AuthContext } from "@/context/AuthContext";
 
 const BookList = () => {
-  const [books, setBooks] = useState([]);
   const [orderBy, setOrderBy] = useState("mostRecent");
   const { bookCollection, setBookCollection } = useContext(BookContext);
   const { user } = useContext(AuthContext);
